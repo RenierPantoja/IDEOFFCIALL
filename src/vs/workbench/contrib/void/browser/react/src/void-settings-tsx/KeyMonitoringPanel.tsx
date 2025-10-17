@@ -102,13 +102,13 @@ const ProviderKeyCard = ({ status, onRotate, onReset }: {
 
 			{hasLimits && (
 				<div className="mb-4">
-					{usage.hourlyLimit && (
+					{usage.hourlyLimit && usage.hourlyLimit > 0 && (
 						<UsageBar current={usage.hourlyUsage} limit={usage.hourlyLimit} label="Hourly" />
 					)}
-					{usage.dailyLimit && (
+					{usage.dailyLimit && usage.dailyLimit > 0 && (
 						<UsageBar current={usage.dailyUsage} limit={usage.dailyLimit} label="Daily" />
 					)}
-					{usage.monthlyLimit && (
+					{usage.monthlyLimit && usage.monthlyLimit > 0 && (
 						<UsageBar current={usage.monthlyUsage} limit={usage.monthlyLimit} label="Monthly" />
 					)}
 				</div>
@@ -167,19 +167,19 @@ export const KeyMonitoringPanel = () => {
 				const providerSettings = settingsState.settingsOfProvider[provider];
 				if (!providerSettings?.apiKeys?.length) continue;
 
-				const currentKeyIndex = providerSettings.currentApiKeyIndex || 0;
+				const currentKeyIndex = providerSettings.currentKeyIndex || 0;
 				const currentApiKey = providerSettings.apiKeys[currentKeyIndex];
 				if (!currentApiKey) continue;
 
 				// Get usage stats
-				const usageStats = voidSettingsService.getTokenUsageStats(provider);
+				const usageStats = await voidSettingsService.getTokenUsageStats(provider);
 				
 				// Check if rotation is needed
-				const shouldRotate = voidSettingsService.shouldRotateProactively(provider);
+				const shouldRotate = await voidSettingsService.shouldRotateProactively(provider);
 
 				// Check if provider has limits configured
-				const limits = providerSettings.limits;
-				const hasLimits = !!(limits?.hourlyTokenLimit || limits?.dailyTokenLimit || limits?.monthlyTokenLimit);
+				const limits = providerSettings.providerLimits;
+				const hasLimits = !!(limits?.tokensPerHour || limits?.tokensPerDay || limits?.maxTokensTotal);
 
 				statuses.push({
 					provider,
@@ -212,7 +212,7 @@ export const KeyMonitoringPanel = () => {
 
 	const handleRotateKey = useCallback(async (provider: ProviderName) => {
 		try {
-			voidSettingsService.rotateToNextKey(provider);
+			await voidSettingsService.rotateToNextApiKey(provider);
 			await loadProviderStatuses(); // Refresh data
 		} catch (error) {
 			console.error(`Failed to rotate key for ${provider}:`, error);
@@ -221,7 +221,7 @@ export const KeyMonitoringPanel = () => {
 
 	const handleResetUsage = useCallback(async (provider: ProviderName) => {
 		try {
-			voidSettingsService.resetTokenUsage(provider);
+			await voidSettingsService.resetTokenUsage(provider);
 			await loadProviderStatuses(); // Refresh data
 		} catch (error) {
 			console.error(`Failed to reset usage for ${provider}:`, error);

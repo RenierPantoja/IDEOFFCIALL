@@ -45,14 +45,12 @@ export class TokenUsageTracker extends Disposable {
 	private readonly PROACTIVE_ROTATION_THRESHOLD = 0.8; // 80%
 	
 	private cleanupTimer: NodeJS.Timeout | undefined;
-	private usageData: Map<string, TokenUsageEntry> = new Map();
 
 	constructor(
 		private readonly storageService: IStorageService,
 		private readonly logService: ILogService
 	) {
 		super();
-		this.loadUsageData();
 		this.startCleanupTimer();
 		this.logService.info('[TokenUsageTracker] Initialized with persistent storage and logging');
 	}
@@ -62,6 +60,7 @@ export class TokenUsageTracker extends Disposable {
 		this.cleanupTimer = setInterval(() => {
 			this.cleanupExpiredData()
 		}, this.CLEANUP_INTERVAL)
+		this._register({ dispose: () => this.cleanupTimer && clearInterval(this.cleanupTimer) });
 		this.logService.info('[TokenUsageTracker] Started cleanup timer with interval of 1 hour')
 	}
 
@@ -175,7 +174,19 @@ export class TokenUsageTracker extends Disposable {
 	private loadUsageData(): Record<string, Record<string, KeyUsageData>> {
 		try {
 			const stored = this.storageService.get(this.STORAGE_KEY, StorageScope.APPLICATION, '{}')
+			if (!stored || stored.trim() === '') {
+				this.logService.debug('[TokenUsageTracker] Empty storage data, returning empty object')
+				return {}
+			}
+			
 			const parsed = JSON.parse(stored)
+			
+			// Validate parsed data structure
+			if (!parsed || typeof parsed !== 'object') {
+				this.logService.warn('[TokenUsageTracker] Invalid data structure in storage, resetting')
+				return {}
+			}
+			
 			if (Object.keys(parsed).length > 0) {
 				this.logService.debug(`[TokenUsageTracker] Loaded usage data for ${Object.keys(parsed).length} providers from storage`)
 			} else {
@@ -193,7 +204,14 @@ export class TokenUsageTracker extends Disposable {
 	 */
 	private saveUsageData(data: Record<string, Record<string, KeyUsageData>>): void {
 		try {
-			this.storageService.store(this.STORAGE_KEY, JSON.stringify(data), StorageScope.APPLICATION, StorageTarget.MACHINE)
+			// Validate data before saving
+			if (!data || typeof data !== 'object') {
+				this.logService.error('[TokenUsageTracker] Invalid data provided for saving:', typeof data)
+				return
+			}
+
+			const serialized = JSON.stringify(data)
+			this.storageService.store(this.STORAGE_KEY, serialized, StorageScope.APPLICATION, StorageTarget.MACHINE)
 			this.logService.debug(`[TokenUsageTracker] Saved usage data for ${Object.keys(data).length} providers to storage`)
 		} catch (error) {
 			this.logService.error('[TokenUsageTracker] Failed to save usage data to storage:', error)
@@ -214,6 +232,17 @@ export class TokenUsageTracker extends Disposable {
 	 * Record token usage for a specific provider
 	 */
 	recordUsage(providerName: ProviderName, tokensUsed: number): void {
+		// Validate input parameters
+		if (!providerName || typeof providerName !== 'string') {
+			this.logService.error('[TokenUsageTracker] Invalid provider name:', providerName);
+			return;
+		}
+		
+		if (typeof tokensUsed !== 'number' || tokensUsed < 0 || !isFinite(tokensUsed)) {
+			this.logService.error('[TokenUsageTracker] Invalid tokens used value:', tokensUsed);
+			return;
+		}
+
 		const data = this.loadUsageData()
 		const providerKey = providerName
 		
@@ -249,6 +278,17 @@ export class TokenUsageTracker extends Disposable {
 	 * Determine if proactive rotation is needed based on thresholds
 	 */
 	shouldRotateProactively(providerName: ProviderName, limits: ProviderLimits): boolean {
+		// Validate input parameters
+		if (!providerName || typeof providerName !== 'string') {
+			this.logService.error('[TokenUsageTracker] Invalid provider name:', providerName);
+			return false;
+		}
+		
+		if (!limits || typeof limits !== 'object') {
+			this.logService.debug(`[TokenUsageTracker] No limits provided for ${providerName}, rotation not needed`);
+			return false;
+		}
+
 		// First, perform automatic reset if needed
 		this.autoResetCounters(providerName, limits)
 		
@@ -271,9 +311,9 @@ export class TokenUsageTracker extends Disposable {
 		// Check against thresholds (rotate when reaching 80% of limit)
 		const threshold = this.PROACTIVE_ROTATION_THRESHOLD
 
-		const hourlyThreshold = limits.hourlyTokenLimit ? hourlyUsage / limits.hourlyTokenLimit : 0
-		const dailyThreshold = limits.dailyTokenLimit ? dailyUsage / limits.dailyTokenLimit : 0
-		const monthlyThreshold = limits.monthlyTokenLimit ? monthlyUsage / limits.monthlyTokenLimit : 0
+		const hourlyThreshold = limits.tokensPerHour ? hourlyUsage / limits.tokensPerHour : 0
+		const dailyThreshold = limits.tokensPerDay ? dailyUsage / limits.tokensPerDay : 0
+		const monthlyThreshold = limits.maxTokensTotal ? monthlyUsage / limits.maxTokensTotal : 0
 
 		const maxThreshold = Math.max(hourlyThreshold, dailyThreshold, monthlyThreshold)
 		const shouldRotate = maxThreshold >= threshold
@@ -293,6 +333,17 @@ export class TokenUsageTracker extends Disposable {
 	 * Get usage statistics for a specific provider
 	 */
 	getUsageStats(providerName: ProviderName, limits: ProviderLimits): TokenUsageStats | null {
+		// Validate input parameters
+		if (!providerName || typeof providerName !== 'string') {
+			this.logService.error('[TokenUsageTracker] Invalid provider name:', providerName);
+			return null;
+		}
+		
+		if (!limits || typeof limits !== 'object') {
+			this.logService.debug(`[TokenUsageTracker] No limits provided for ${providerName}, returning basic stats`);
+			limits = {}; // Use empty limits object
+		}
+
 		// First, perform automatic reset if needed
 		this.autoResetCounters(providerName, limits)
 		
@@ -316,12 +367,12 @@ export class TokenUsageTracker extends Disposable {
 			hourlyUsage,
 			dailyUsage,
 			monthlyUsage,
-			hourlyLimit: limits.hourlyTokenLimit,
-			dailyLimit: limits.dailyTokenLimit,
-			monthlyLimit: limits.monthlyTokenLimit,
-			hourlyUtilization: limits.hourlyTokenLimit ? hourlyUsage / limits.hourlyTokenLimit : 0,
-			dailyUtilization: limits.dailyTokenLimit ? dailyUsage / limits.dailyTokenLimit : 0,
-			monthlyUtilization: limits.monthlyTokenLimit ? monthlyUsage / limits.monthlyTokenLimit : 0
+			hourlyLimit: limits.tokensPerHour,
+			dailyLimit: limits.tokensPerDay,
+			monthlyLimit: limits.maxTokensTotal,
+			hourlyUtilization: limits.tokensPerHour ? hourlyUsage / limits.tokensPerHour : 0,
+			dailyUtilization: limits.tokensPerDay ? dailyUsage / limits.tokensPerDay : 0,
+			monthlyUtilization: limits.maxTokensTotal ? monthlyUsage / limits.maxTokensTotal : 0
 		}
 	}
 
@@ -329,6 +380,12 @@ export class TokenUsageTracker extends Disposable {
 	 * Reset usage data for a specific provider
 	 */
 	resetUsage(providerName: ProviderName): void {
+		// Validate input parameters
+		if (!providerName || typeof providerName !== 'string') {
+			this.logService.error('[TokenUsageTracker] Invalid provider name:', providerName);
+			return;
+		}
+
 		const data = this.loadUsageData()
 		const providerKey = providerName
 		
@@ -342,6 +399,9 @@ export class TokenUsageTracker extends Disposable {
 				lastHourlyReset: Date.now()
 			}
 			this.saveUsageData(data)
+			this.logService.debug(`[TokenUsageTracker] Successfully reset usage data for ${providerName}`)
+		} else {
+			this.logService.debug(`[TokenUsageTracker] No usage data found to reset for ${providerName}`)
 		}
 	}
 
@@ -359,14 +419,23 @@ export class TokenUsageTracker extends Disposable {
 	 * Estimate token count for a given text (simple approximation)
 	 */
 	estimateTokens(text: string): number {
+		// Validate input parameter
+		if (typeof text !== 'string') {
+			this.logService.error('[TokenUsageTracker] Invalid text parameter for token estimation:', typeof text);
+			return 0;
+		}
+		
+		if (text.length === 0) {
+			return 0;
+		}
+
 		// Simple approximation: ~4 characters per token for most models
-		return Math.ceil(text.length / 4)
+		const estimated = Math.ceil(text.length / 4);
+		this.logService.debug(`[TokenUsageTracker] Estimated ${estimated} tokens for ${text.length} characters`);
+		return estimated;
 	}
 
 	dispose(): void {
-		if (this.cleanupTimer) {
-			clearInterval(this.cleanupTimer)
-			this.cleanupTimer = undefined
-		}
+		super.dispose();
 	}
 }

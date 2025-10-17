@@ -308,15 +308,15 @@ const rawToolCallObjOfAnthropicParams = (toolBlock: Anthropic.Messages.ToolUseBl
 
 const _sendOpenAICompatibleChat = async ({ messages, onText, onFinalMessage, onError, settingsOfProvider, modelSelectionOptions, modelName: modelName_, _setAborter, providerName, chatMode, separateSystemMessage, overridesOfModel, mcpTools, voidSettingsService }: SendChatParams_Internal) => {
 	// Verificação proativa de rotação de chaves API
-	if (voidSettingsService && settingsOfProvider.apiKeys.length > 1) {
+	if (voidSettingsService && settingsOfProvider[providerName]?.apiKeys && settingsOfProvider[providerName].apiKeys!.length > 1) {
 		const shouldRotate = await voidSettingsService.shouldRotateProactively(providerName);
 		if (shouldRotate) {
 			console.log(`[TokenUsage] Rotação proativa ativada para ${providerName} - trocando para próxima chave`);
 			await voidSettingsService.rotateToNextApiKey(providerName);
 			// Atualizar settingsOfProvider com a nova chave
-			const updatedSettings = await voidSettingsService.getSettingsOfProvider(providerName);
-			if (updatedSettings) {
-				Object.assign(settingsOfProvider, updatedSettings);
+			const currentKey = voidSettingsService.getCurrentApiKey(providerName);
+			if (currentKey && settingsOfProvider[providerName]) {
+				settingsOfProvider[providerName].apiKey = currentKey;
 			}
 		}
 	}
@@ -428,7 +428,7 @@ const _sendOpenAICompatibleChat = async ({ messages, onText, onFinalMessage, onE
 				// Rastrear uso de tokens após resposta bem-sucedida
 				if (voidSettingsService) {
 					const estimatedTokens = voidSettingsService.estimateTokenCount(fullTextSoFar + fullReasoningSoFar);
-					await voidSettingsService.trackTokenUsage(providerName, estimatedTokens);
+					await voidSettingsService.recordTokenUsage(providerName, estimatedTokens);
 				}
 
 				const toolCall = rawToolCallObjOfParamsStr(toolName, toolParamsStr, toolId)
@@ -577,15 +577,15 @@ const anthropicTools = (chatMode: ChatMode | null, mcpTools: InternalToolInfo[] 
 // ------------ ANTHROPIC ------------
 const sendAnthropicChat = async ({ messages, providerName, onText, onFinalMessage, onError, settingsOfProvider, modelSelectionOptions, overridesOfModel, modelName: modelName_, _setAborter, separateSystemMessage, chatMode, mcpTools, voidSettingsService }: SendChatParams_Internal) => {
 	// Verificação proativa de rotação de chaves API para Anthropic
-	if (voidSettingsService && settingsOfProvider.apiKeys.length > 1) {
+	if (voidSettingsService && settingsOfProvider[providerName]?.apiKeys && settingsOfProvider[providerName].apiKeys!.length > 1) {
 		const shouldRotate = await voidSettingsService.shouldRotateProactively(providerName);
 		if (shouldRotate) {
 			console.log(`[TokenUsage] Rotação proativa ativada para ${providerName} - trocando para próxima chave`);
 			await voidSettingsService.rotateToNextApiKey(providerName);
 			// Atualizar settingsOfProvider com a nova chave
-			const updatedSettings = await voidSettingsService.getSettingsOfProvider(providerName);
-			if (updatedSettings) {
-				Object.assign(settingsOfProvider, updatedSettings);
+			const currentKey = voidSettingsService.getCurrentApiKey(providerName);
+			if (currentKey && settingsOfProvider[providerName]) {
+				settingsOfProvider[providerName].apiKey = currentKey;
 			}
 		}
 	}
@@ -708,7 +708,7 @@ const sendAnthropicChat = async ({ messages, providerName, onText, onFinalMessag
 			const outputTokens = response.usage.output_tokens || 0
 			const totalTokens = inputTokens + outputTokens
 			
-			voidSettingsService.trackTokenUsage(providerName, totalTokens)
+			voidSettingsService.recordTokenUsage(providerName, totalTokens)
 		}
 
 		onFinalMessage({ fullText, fullReasoning, anthropicReasoning, ...toolCallObj })
@@ -877,15 +877,15 @@ const sendGeminiChat = async ({
 	if (providerName !== 'gemini') throw new Error(`Sending Gemini chat, but provider was ${providerName}`)
 
 	// Verificação proativa de rotação de chaves API para Gemini
-	if (voidSettingsService && settingsOfProvider.apiKeys.length > 1) {
+	if (voidSettingsService && settingsOfProvider[providerName]?.apiKeys && settingsOfProvider[providerName].apiKeys!.length > 1) {
 		const shouldRotate = await voidSettingsService.shouldRotateProactively(providerName);
 		if (shouldRotate) {
 			console.log(`[TokenUsage] Rotação proativa ativada para ${providerName} - trocando para próxima chave`);
 			await voidSettingsService.rotateToNextApiKey(providerName);
 			// Atualizar settingsOfProvider com a nova chave
-			const updatedSettings = await voidSettingsService.getSettingsOfProvider(providerName);
-			if (updatedSettings) {
-				Object.assign(settingsOfProvider, updatedSettings);
+			const currentKey = voidSettingsService.getCurrentApiKey(providerName);
+			if (currentKey && settingsOfProvider[providerName]) {
+				settingsOfProvider[providerName].apiKey = currentKey;
 			}
 		}
 	}
@@ -980,7 +980,7 @@ const sendGeminiChat = async ({
 				// Rastrear uso de tokens após resposta bem-sucedida para Gemini
 				if (voidSettingsService) {
 					const estimatedTokens = voidSettingsService.estimateTokenCount(fullTextSoFar + fullReasoningSoFar);
-					await voidSettingsService.trackTokenUsage(providerName, estimatedTokens);
+					await voidSettingsService.recordTokenUsage(providerName, estimatedTokens);
 				}
 
 				if (!toolId) toolId = generateUuid() // ids are empty, but other providers might expect an id

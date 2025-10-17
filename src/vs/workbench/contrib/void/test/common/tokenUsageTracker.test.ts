@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { deepStrictEqual, ok, strictEqual } from 'assert';
+import { ok, strictEqual } from 'assert';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { InMemoryStorageService, StorageScope, StorageTarget } from '../../../../../platform/storage/common/storage.js';
+import { InMemoryStorageService } from '../../../../../platform/storage/common/storage.js';
 import { TokenUsageTracker } from '../../common/tokenUsageTracker.js';
 import { ProviderName, ProviderLimits } from '../../common/voidSettingsTypes.js';
 import { NullLogService } from '../../../../../platform/log/common/log.js';
@@ -30,8 +30,8 @@ suite('TokenUsageTracker', () => {
 
 	test('should initialize with empty usage data', () => {
 		const stats = tokenTracker.getUsageStats('openai' as ProviderName, {
-			dailyTokenLimit: 1000,
-			monthlyTokenLimit: 30000
+			tokensPerDay: 1000,
+			maxTokensTotal: 30000
 		});
 		
 		strictEqual(stats, null);
@@ -39,8 +39,8 @@ suite('TokenUsageTracker', () => {
 
 	test('should record token usage correctly', () => {
 		const limits: ProviderLimits = {
-			dailyTokenLimit: 1000,
-			monthlyTokenLimit: 30000
+			tokensPerDay: 1000,
+			maxTokensTotal: 30000
 		};
 
 		tokenTracker.recordUsage('openai' as ProviderName, 100);
@@ -49,14 +49,14 @@ suite('TokenUsageTracker', () => {
 		ok(stats);
 		strictEqual(stats.dailyUsage, 100);
 		strictEqual(stats.monthlyUsage, 100);
-		strictEqual(stats.dailyUtilization, 10); // 100/1000 * 100
-		strictEqual(stats.monthlyUtilization, 100/300); // 100/30000 * 100
+		strictEqual(stats.dailyUtilization, 0.1); // 100/1000 = 0.1
+		strictEqual(stats.monthlyUtilization, 100/30000); // 100/30000
 	});
 
 	test('should accumulate multiple usage records', () => {
 		const limits: ProviderLimits = {
-			dailyTokenLimit: 1000,
-			monthlyTokenLimit: 30000
+			tokensPerDay: 1000,
+			maxTokensTotal: 30000
 		};
 
 		tokenTracker.recordUsage('openai' as ProviderName, 100);
@@ -67,14 +67,14 @@ suite('TokenUsageTracker', () => {
 		ok(stats);
 		strictEqual(stats.dailyUsage, 450);
 		strictEqual(stats.monthlyUsage, 450);
-		strictEqual(stats.dailyUtilization, 45); // 450/1000 * 100
-		strictEqual(stats.monthlyUtilization, 1.5); // 450/30000 * 100
+		strictEqual(stats.dailyUtilization, 0.45); // 450/1000 = 0.45
+		strictEqual(stats.monthlyUtilization, 0.015); // 450/30000 = 0.015
 	});
 
 	test('should track usage separately for different providers', () => {
 		const limits: ProviderLimits = {
-			dailyTokenLimit: 1000,
-			monthlyTokenLimit: 30000
+			tokensPerDay: 1000,
+			maxTokensTotal: 30000
 		};
 
 		tokenTracker.recordUsage('openai' as ProviderName, 100);
@@ -91,8 +91,8 @@ suite('TokenUsageTracker', () => {
 
 	test('should track usage separately for different key indices', () => {
 		const limits: ProviderLimits = {
-			dailyTokenLimit: 1000,
-			monthlyTokenLimit: 30000
+			tokensPerDay: 1000,
+			maxTokensTotal: 30000
 		};
 
 		tokenTracker.recordUsage('openai' as ProviderName, 100);
@@ -109,8 +109,8 @@ suite('TokenUsageTracker', () => {
 
 	test('should not rotate proactively when usage is below threshold', () => {
 		const limits: ProviderLimits = {
-			dailyTokenLimit: 1000,
-			monthlyTokenLimit: 30000
+			tokensPerDay: 1000,
+			maxTokensTotal: 30000
 		};
 
 		tokenTracker.recordUsage('openai' as ProviderName, 100); // 10% of daily limit
@@ -121,8 +121,8 @@ suite('TokenUsageTracker', () => {
 
 	test('should rotate proactively when daily usage exceeds 80% threshold', () => {
 		const limits: ProviderLimits = {
-			dailyTokenLimit: 1000,
-			monthlyTokenLimit: 30000
+			tokensPerDay: 1000,
+			maxTokensTotal: 30000
 		};
 
 		tokenTracker.recordUsage('openai' as ProviderName, 850); // 85% of daily limit
@@ -133,8 +133,8 @@ suite('TokenUsageTracker', () => {
 
 	test('should rotate proactively when monthly usage exceeds 80% threshold', () => {
 		const limits: ProviderLimits = {
-			dailyTokenLimit: 10000,
-			monthlyTokenLimit: 30000
+			tokensPerDay: 10000,
+			maxTokensTotal: 30000
 		};
 
 		tokenTracker.recordUsage('openai' as ProviderName, 25000); // 83.3% of monthly limit
@@ -145,9 +145,9 @@ suite('TokenUsageTracker', () => {
 
 	test('should rotate proactively when hourly usage exceeds 80% threshold', () => {
 		const limits: ProviderLimits = {
-			hourlyTokenLimit: 100,
-			dailyTokenLimit: 1000,
-			monthlyTokenLimit: 30000
+			tokensPerHour: 100,
+			tokensPerDay: 1000,
+			maxTokensTotal: 30000
 		};
 
 		tokenTracker.recordUsage('openai' as ProviderName, 85); // 85% of hourly limit
@@ -158,8 +158,8 @@ suite('TokenUsageTracker', () => {
 
 	test('should reset usage data correctly', () => {
 		const limits: ProviderLimits = {
-			dailyTokenLimit: 1000,
-			monthlyTokenLimit: 30000
+			tokensPerDay: 1000,
+			maxTokensTotal: 30000
 		};
 
 		tokenTracker.recordUsage('openai' as ProviderName, 500);
@@ -176,8 +176,8 @@ suite('TokenUsageTracker', () => {
 
 	test('should clear all usage data', () => {
 		const limits: ProviderLimits = {
-			dailyTokenLimit: 1000,
-			monthlyTokenLimit: 30000
+			tokensPerDay: 1000,
+			maxTokensTotal: 30000
 		};
 
 		tokenTracker.recordUsage('openai' as ProviderName, 100);
@@ -206,8 +206,8 @@ suite('TokenUsageTracker', () => {
 
 	test('should persist usage data in storage', () => {
 		const limits: ProviderLimits = {
-			dailyTokenLimit: 1000,
-			monthlyTokenLimit: 30000
+			tokensPerDay: 1000,
+			maxTokensTotal: 30000
 		};
 
 		tokenTracker.recordUsage('openai' as ProviderName, 100);
@@ -238,7 +238,7 @@ suite('TokenUsageTracker', () => {
 		errorTracker.recordUsage('openai' as ProviderName, 100);
 		
 		const stats = errorTracker.getUsageStats('openai' as ProviderName, {
-			dailyTokenLimit: 1000
+			tokensPerDay: 1000
 		});
 		
 		strictEqual(stats, null);

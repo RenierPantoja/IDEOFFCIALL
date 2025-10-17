@@ -85,10 +85,11 @@ export interface IVoidSettingsService {
 	getCurrentApiKey(providerName: ProviderName): string | undefined;
 
 	// Token usage tracking and proactive rotation
-	trackTokenUsage(providerName: ProviderName, tokensUsed: number, requestType?: string): Promise<void>;
+	recordTokenUsage(providerName: ProviderName, tokensUsed: number, requestType?: string): Promise<void>;
 	shouldRotateProactively(providerName: ProviderName): Promise<boolean>;
 	getTokenUsageStats(providerName: ProviderName): Promise<any>;
 	resetTokenUsage(providerName: ProviderName, keyIndex?: number): Promise<void>;
+	estimateTokenCount(text: string): number;
 
 	addMCPUserStateOfNames(userStateOfName: MCPUserStateOfName): Promise<void>;
 	removeMCPUserStateOfNames(serverNames: string[]): Promise<void>;
@@ -240,7 +241,7 @@ const defaultState = () => {
 
 
 export const IVoidSettingsService = createDecorator<IVoidSettingsService>('VoidSettingsService');
-class VoidSettingsService extends Disposable implements IVoidSettingsService {
+export class VoidSettingsService extends Disposable implements IVoidSettingsService {
 	_serviceBrand: undefined;
 
 	private readonly _onDidChangeState = new Emitter<void>();
@@ -707,9 +708,13 @@ class VoidSettingsService extends Disposable implements IVoidSettingsService {
 	}
 
 	// Token usage tracking and proactive rotation methods
-	trackTokenUsage = async (providerName: ProviderName, tokensUsed: number, requestType?: string): Promise<void> => {
+	recordTokenUsage = async (providerName: ProviderName, tokensUsed: number, requestType?: string): Promise<void> => {
 		this._logService.debug(`[VoidSettingsService] Tracking token usage for ${providerName}: tokens=${tokensUsed}`);
 		this._tokenUsageTracker.recordUsage(providerName, tokensUsed)
+	}
+
+	estimateTokenCount = (text: string): number => {
+		return this._tokenUsageTracker.estimateTokens(text);
 	}
 
 	shouldRotateProactively = async (providerName: ProviderName): Promise<boolean> => {

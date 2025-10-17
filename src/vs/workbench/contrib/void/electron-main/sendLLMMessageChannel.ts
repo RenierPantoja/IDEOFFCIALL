@@ -12,6 +12,7 @@ import { EventLLMMessageOnTextParams, EventLLMMessageOnErrorParams, EventLLMMess
 import { sendLLMMessage } from './llmMessage/sendLLMMessage.js'
 import { IMetricsService } from '../common/metricsService.js';
 import { sendLLMMessageToProviderImplementation } from './llmMessage/sendLLMMessage.impl.js';
+import { IVoidSettingsService } from '../common/voidSettingsService.js';
 
 // NODE IMPLEMENTATION - calls actual sendLLMMessage() and returns listeners to it
 
@@ -48,6 +49,7 @@ export class LLMMessageChannel implements IServerChannel {
 	// stupidly, channels can't take in @IService
 	constructor(
 		private readonly metricsService: IMetricsService,
+		private readonly voidSettingsService: IVoidSettingsService,
 	) { }
 
 	// browser uses this to listen for changes
@@ -110,7 +112,7 @@ export class LLMMessageChannel implements IServerChannel {
 			},
 			abortRef: this._infoOfRunningRequest[requestId].abortRef,
 		}
-		const p = sendLLMMessage(mainThreadParams, this.metricsService);
+		const p = sendLLMMessage(mainThreadParams, this.metricsService, this.voidSettingsService);
 		this._infoOfRunningRequest[requestId].waitForSend = p
 	}
 

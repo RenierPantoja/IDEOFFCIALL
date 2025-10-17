@@ -7,6 +7,7 @@ import { SendLLMMessageParams, OnText, OnFinalMessage, OnError } from '../../com
 import { IMetricsService } from '../../common/metricsService.js';
 import { displayInfoOfProviderName } from '../../common/voidSettingsTypes.js';
 import { sendLLMMessageToProviderImplementation } from './sendLLMMessage.impl.js';
+import { IVoidSettingsService } from '../../common/voidSettingsService.js';
 
 
 export const sendLLMMessage = async ({
@@ -26,7 +27,8 @@ export const sendLLMMessage = async ({
 	mcpTools,
 }: SendLLMMessageParams,
 
-	metricsService: IMetricsService
+	metricsService: IMetricsService,
+	voidSettingsService?: IVoidSettingsService
 ) => {
 
 
@@ -108,12 +110,12 @@ export const sendLLMMessage = async ({
 		}
 		const { sendFIM, sendChat } = implementation
 		if (messagesType === 'chatMessages') {
-			await sendChat({ messages: messages_, onText, onFinalMessage, onError, settingsOfProvider, modelSelectionOptions, overridesOfModel, modelName, _setAborter, providerName, separateSystemMessage, chatMode, mcpTools })
+			await sendChat({ messages: messages_, onText, onFinalMessage, onError, settingsOfProvider, modelSelectionOptions, overridesOfModel, modelName, _setAborter, providerName, separateSystemMessage, chatMode, mcpTools, voidSettingsService })
 			return
 		}
 		if (messagesType === 'FIMMessage') {
 			if (sendFIM) {
-				await sendFIM({ messages: messages_, onText, onFinalMessage, onError, settingsOfProvider, modelSelectionOptions, overridesOfModel, modelName, _setAborter, providerName, separateSystemMessage })
+				await sendFIM({ messages: messages_, onText, onFinalMessage, onError, settingsOfProvider, modelSelectionOptions, overridesOfModel, modelName, _setAborter, providerName, separateSystemMessage, voidSettingsService })
 				return
 			}
 			onError({ message: `Error running Autocomplete with ${providerName} - ${modelName}.`, fullError: null })

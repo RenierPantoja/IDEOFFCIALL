@@ -71,90 +71,102 @@ export const defaultProviderSettings = {
 
 
 
-export const defaultModelsOfProvider = {
+	export const defaultModelsOfProvider = {
 	openAI: [ // https://platform.openai.com/docs/models/gp
+		'gpt-5',
+		'gpt-5-mini',
+		'gpt-4o',
+		'gpt-4o-mini',
 		'gpt-4.1',
 		'gpt-4.1-mini',
-		'gpt-4.1-nano',
-		'o3',
-		'o4-mini',
-		// 'o1',
-		// 'o1-mini',
-		// 'gpt-4o',
-		// 'gpt-4o-mini',
 	],
 	anthropic: [ // https://docs.anthropic.com/en/docs/about-claude/models
-		'claude-opus-4-0',
-		'claude-sonnet-4-0',
-		'claude-3-7-sonnet-latest',
-		'claude-3-5-sonnet-latest',
-		'claude-3-5-haiku-latest',
-		'claude-3-opus-latest',
+		// Latest models (recommended)
+		'claude-opus-4.0',
+		'claude-opus-4.1',
+		'claude-sonnet-4.5',
+		'claude-haiku-4.5',
+		'claude-3.5-sonnet-20240620',
+		'claude-3-opus-20240229',
+		'claude-3-sonnet-20240229',
+		'claude-3-haiku-20240307',
 	],
-	xAI: [ // https://docs.x.ai/docs/models?cluster=us-east-1
+	xAI: [ // https://docs.x.ai/docs/models
+		'grok-1',
+		'grok-1.5',
 		'grok-2',
+		'grok-2-mini',
 		'grok-3',
 		'grok-3-mini',
-		'grok-3-fast',
-		'grok-3-mini-fast'
+		'grok-4',
+		'grok-4-fast',
+		'grok-4-heavy',
+		'grok-code-fast-1'
 	],
 	gemini: [ // https://ai.google.dev/gemini-api/docs/models/gemini
-		'gemini-2.5-pro-exp-03-25',
-		'gemini-2.5-flash-preview-04-17',
+		'gemini-2.5-pro',
+		'gemini-2.5-flash',
+		'gemini-2.0-pro',
 		'gemini-2.0-flash',
-		'gemini-2.0-flash-lite',
-		'gemini-2.5-pro-preview-05-06',
+		'gemini-1.5-pro',
+		'gemini-1.5-flash',
+		'gemini-1.0-pro',
 	],
-	deepseek: [ // https://api-docs.deepseek.com/quick_start/pricing
+	deepseek: [ // https://platform.deepseek.com/api-docs/models/
+		'deepseek-v2',
+		'deepseek-v2-lite',
+		'deepseek-coder-v2',
+		'deepseek-coder-v2-lite',
 		'deepseek-chat',
-		'deepseek-reasoner',
+		'deepseek-coder',
 	],
 	ollama: [ // autodetected
 	],
 	vLLM: [ // autodetected
 	],
 	lmStudio: [], // autodetected
-
+	mistral: [ // https://docs.mistral.ai/getting-started/models/
+		'mistral-large-latest',
+		'mistral-small-latest',
+		'open-mistral-nemo',
+		'open-mixtral-8x22b',
+		'open-mixtral-8x7b',
+		'mistral-small-2503',
+		'mistral-small-2506',
+		'mistral-small-2501',
+		'codestral-latest',
+		'mistral-large-2407',
+		'mistral-small-2409',
+		'open-mistral-7b',
+	],
 	openRouter: [ // https://openrouter.ai/models
-		// 'anthropic/claude-3.7-sonnet:thinking',
-		'anthropic/claude-opus-4',
-		'anthropic/claude-sonnet-4',
-		'qwen/qwen3-235b-a22b',
-		'anthropic/claude-3.7-sonnet',
+		'google/gemini-2.5-pro',
+		'google/gemini-2.5-flash',
 		'anthropic/claude-3.5-sonnet',
-		'deepseek/deepseek-r1',
-		'deepseek/deepseek-r1-zero:free',
-		'mistralai/devstral-small:free'
-		// 'openrouter/quasar-alpha',
-		// 'google/gemini-2.5-pro-preview-03-25',
-		// 'mistralai/codestral-2501',
-		// 'qwen/qwen-2.5-coder-32b-instruct',
-		// 'mistralai/mistral-small-3.1-24b-instruct:free',
-		// 'google/gemini-2.0-flash-lite-preview-02-05:free',
-		// 'google/gemini-2.0-pro-exp-02-05:free',
-		// 'google/gemini-2.0-flash-exp:free',
+		'anthropic/claude-3-opus',
+		'anthropic/claude-3-haiku',
+		'openai/gpt-4o',
+		'openai/gpt-4-turbo',
+		'deepseek/deepseek-v2',
+		'deepseek/deepseek-v2-lite',
+		'mistralai/open-mistral-nemo',
+		'mistralai/mistral-large-latest',
+		'mistralai/codestral-latest',
 	],
 	groq: [ // https://console.groq.com/docs/models
-		'qwen-qwq-32b',
-		'llama-3.3-70b-versatile',
 		'llama-3.1-8b-instant',
-		// 'qwen-2.5-coder-32b', // preview mode (experimental)
-	],
-	mistral: [ // https://docs.mistral.ai/getting-started/models/models_overview/
-		'codestral-latest',
-		'devstral-small-latest',
-		'mistral-large-latest',
-		'mistral-medium-latest',
-		'ministral-3b-latest',
-		'ministral-8b-latest',
+		'llama-3.1-70b-versatile',
+		'llama3-8b-8192',
+		'llama3-70b-8192',
+		'mixtral-8x7b-32768',
+		'gemma-7b-it',
+		'openai/gpt-oss-20b',
 	],
 	openAICompatible: [], // fallback
 	googleVertex: [],
 	microsoftAzure: [],
 	awsBedrock: [],
 	liteLLM: [],
-
-
 } as const satisfies Record<ProviderName, string[]>
 
 
@@ -416,8 +428,8 @@ const extensiveModelOptionsFallback: VoidStaticProviderInfo['modelOptionsFallbac
 
 	if (lower.includes('gemini') && (lower.includes('2.5') || lower.includes('2-5'))) return toFallback(geminiModelOptions, 'gemini-2.5-pro-exp-03-25')
 
-	if (lower.includes('claude-3-5') || lower.includes('claude-3.5')) return toFallback(anthropicModelOptions, 'claude-3-5-sonnet-20241022')
-	if (lower.includes('claude')) return toFallback(anthropicModelOptions, 'claude-3-7-sonnet-20250219')
+	if (lower.includes('claude-3-5') || lower.includes('claude-3.5')) return toFallback(anthropicModelOptions, 'claude-3.5-sonnet-20240620')
+	if (lower.includes('claude')) return toFallback(anthropicModelOptions, 'claude-sonnet-4-5-20250929')
 
 	if (lower.includes('grok2') || lower.includes('grok2')) return toFallback(xAIModelOptions, 'grok-2')
 	if (lower.includes('grok')) return toFallback(xAIModelOptions, 'grok-3')
@@ -477,76 +489,43 @@ const extensiveModelOptionsFallback: VoidStaticProviderInfo['modelOptionsFallbac
 
 // ---------------- ANTHROPIC ----------------
 const anthropicModelOptions = {
-	'claude-3-7-sonnet-20250219': { // https://docs.anthropic.com/en/docs/about-claude/models/all-models#model-comparison-table
-		contextWindow: 200_000,
-		reservedOutputTokenSpace: 8_192,
-		cost: { input: 3.00, cache_read: 0.30, cache_write: 3.75, output: 15.00 },
+	'claude-opus-4.1': {
+		contextWindow: 200000,
+		cost: {
+			input: 15,
+			output: 75,
+		},
 		downloadable: false,
 		supportsFIM: false,
-		specialToolFormat: 'anthropic-style',
 		supportsSystemMessage: 'separated',
 		reasoningCapabilities: {
 			supportsReasoning: true,
 			canTurnOffReasoning: true,
 			canIOReasoning: true,
-			reasoningReservedOutputTokenSpace: 8192, // can bump it to 128_000 with beta mode output-128k-2025-02-19
-			reasoningSlider: { type: 'budget_slider', min: 1024, max: 8192, default: 1024 }, // they recommend batching if max > 32_000. we cap at 8192 because above is typically not necessary (often even buggy)
+			reasoningReservedOutputTokenSpace: 8192,
+			reasoningSlider: { type: 'budget_slider', min: 1024, max: 8192, default: 1024 },
 		},
-
+		specialToolFormat: 'anthropic-style',
+		reservedOutputTokenSpace: 4096,
 	},
-	'claude-opus-4-20250514': {
-		contextWindow: 200_000,
-		reservedOutputTokenSpace: 8_192,
-		cost: { input: 15.00, cache_read: 1.50, cache_write: 18.75, output: 30.00 },
+	'claude-sonnet-4.5': {
+		contextWindow: 200000,
+		cost: {
+			input: 3,
+			output: 15,
+		},
 		downloadable: false,
 		supportsFIM: false,
-		specialToolFormat: 'anthropic-style',
 		supportsSystemMessage: 'separated',
 		reasoningCapabilities: {
 			supportsReasoning: true,
 			canTurnOffReasoning: true,
 			canIOReasoning: true,
-			reasoningReservedOutputTokenSpace: 8192, // can bump it to 128_000 with beta mode output-128k-2025-02-19
-			reasoningSlider: { type: 'budget_slider', min: 1024, max: 8192, default: 1024 }, // they recommend batching if max > 32_000. we cap at 8192 because above is typically not necessary (often even buggy)
+			reasoningReservedOutputTokenSpace: 8192,
+			reasoningSlider: { type: 'budget_slider', min: 1024, max: 8192, default: 1024 },
 		},
-
-	},
-	'claude-sonnet-4-20250514': {
-		contextWindow: 200_000,
-		reservedOutputTokenSpace: 8_192,
-		cost: { input: 3.00, cache_read: 0.30, cache_write: 3.75, output: 6.00 },
-		downloadable: false,
-		supportsFIM: false,
 		specialToolFormat: 'anthropic-style',
-		supportsSystemMessage: 'separated',
-		reasoningCapabilities: {
-			supportsReasoning: true,
-			canTurnOffReasoning: true,
-			canIOReasoning: true,
-			reasoningReservedOutputTokenSpace: 8192, // can bump it to 128_000 with beta mode output-128k-2025-02-19
-			reasoningSlider: { type: 'budget_slider', min: 1024, max: 8192, default: 1024 }, // they recommend batching if max > 32_000. we cap at 8192 because above is typically not necessary (often even buggy)
-		},
-
-	},
-	'claude-3-5-sonnet-20241022': {
-		contextWindow: 200_000,
-		reservedOutputTokenSpace: 8_192,
-		cost: { input: 3.00, cache_read: 0.30, cache_write: 3.75, output: 15.00 },
-		downloadable: false,
-		supportsFIM: false,
-		specialToolFormat: 'anthropic-style',
-		supportsSystemMessage: 'separated',
-		reasoningCapabilities: false,
-	},
-	'claude-3-5-haiku-20241022': {
-		contextWindow: 200_000,
-		reservedOutputTokenSpace: 8_192,
-		cost: { input: 0.80, cache_read: 0.08, cache_write: 1.00, output: 4.00 },
-		downloadable: false,
-		supportsFIM: false,
-		specialToolFormat: 'anthropic-style',
-		supportsSystemMessage: 'separated',
-		reasoningCapabilities: false,
+		reservedOutputTokenSpace: 4096,
 	},
 	'claude-3-opus-20240229': {
 		contextWindow: 200_000,
@@ -566,6 +545,72 @@ const anthropicModelOptions = {
 		specialToolFormat: 'anthropic-style',
 		supportsSystemMessage: 'separated',
 		reasoningCapabilities: false,
+	},
+	'claude-3.5-sonnet-20240620': {
+		contextWindow: 200_000,
+		reservedOutputTokenSpace: 8_192,
+		cost: { input: 3.00, cache_read: 0.30, cache_write: 3.75, output: 15.00 },
+		downloadable: false,
+		supportsFIM: false,
+		specialToolFormat: 'anthropic-style',
+		supportsSystemMessage: 'separated',
+		reasoningCapabilities: false,
+	},
+	'claude-3-haiku-20240307': {
+		contextWindow: 200_000,
+		reservedOutputTokenSpace: 4_096,
+		cost: { input: 0.25, output: 1.25 },
+		downloadable: false,
+		supportsFIM: false,
+		specialToolFormat: 'anthropic-style',
+		supportsSystemMessage: 'separated',
+		reasoningCapabilities: false,
+	},
+	'claude-2.1': {
+		contextWindow: 200_000,
+		reservedOutputTokenSpace: 4_096,
+		cost: { input: 8.00, output: 24.00 },
+		downloadable: false,
+		supportsFIM: false,
+		specialToolFormat: 'anthropic-style',
+		supportsSystemMessage: 'separated',
+		reasoningCapabilities: false,
+	},
+	'claude-2.0': {
+		contextWindow: 100_000,
+		reservedOutputTokenSpace: 4_096,
+		cost: { input: 8.00, output: 24.00 },
+		downloadable: false,
+		supportsFIM: false,
+		specialToolFormat: 'anthropic-style',
+		supportsSystemMessage: 'separated',
+		reasoningCapabilities: false,
+	},
+	'claude-instant-1.2': {
+		contextWindow: 100_000,
+		reservedOutputTokenSpace: 4_096,
+		cost: { input: 0.80, output: 2.40 },
+		downloadable: false,
+		supportsFIM: false,
+		specialToolFormat: 'anthropic-style',
+		supportsSystemMessage: 'separated',
+		reasoningCapabilities: false,
+	},
+	'claude-sonnet-4-5-20250929': {
+		contextWindow: 200_000,
+		reservedOutputTokenSpace: 8_192,
+		cost: { input: 3.00, output: 15.00 },
+		downloadable: false,
+		supportsFIM: false,
+		specialToolFormat: 'anthropic-style',
+		supportsSystemMessage: 'separated',
+		reasoningCapabilities: {
+			supportsReasoning: true,
+			canTurnOffReasoning: true,
+			canIOReasoning: true,
+			reasoningReservedOutputTokenSpace: 8192,
+			reasoningSlider: { type: 'budget_slider', min: 1024, max: 8192, default: 1024 },
+		},
 	}
 } as const satisfies { [s: string]: VoidStaticModelInfo }
 
@@ -586,15 +631,20 @@ const anthropicSettings: VoidStaticProviderInfo = {
 	modelOptionsFallback: (modelName) => {
 		const lower = modelName.toLowerCase()
 		let fallbackName: keyof typeof anthropicModelOptions | null = null
-		if (lower.includes('claude-4-opus') || lower.includes('claude-opus-4')) fallbackName = 'claude-opus-4-20250514'
-		if (lower.includes('claude-4-sonnet') || lower.includes('claude-sonnet-4')) fallbackName = 'claude-sonnet-4-20250514'
+		if (lower.includes('claude-4-opus') || lower.includes('claude-opus-4')) fallbackName = 'claude-opus-4.1'
+		if (lower.includes('claude-4-sonnet') || lower.includes('claude-sonnet-4')) fallbackName = 'claude-sonnet-4.5'
+		if (lower.includes('claude-4.5')) fallbackName = 'claude-sonnet-4.5'
+		if (lower.includes('claude-4.0')) fallbackName = 'claude-opus-4.1'
 
 
-		if (lower.includes('claude-3-7-sonnet')) fallbackName = 'claude-3-7-sonnet-20250219'
-		if (lower.includes('claude-3-5-sonnet')) fallbackName = 'claude-3-5-sonnet-20241022'
-		if (lower.includes('claude-3-5-haiku')) fallbackName = 'claude-3-5-haiku-20241022'
+
+		if (lower.includes('claude-3.5-sonnet')) fallbackName = 'claude-3.5-sonnet-20240620'
+		if (lower.includes('claude-3-haiku')) fallbackName = 'claude-3-haiku-20240307'
 		if (lower.includes('claude-3-opus')) fallbackName = 'claude-3-opus-20240229'
 		if (lower.includes('claude-3-sonnet')) fallbackName = 'claude-3-sonnet-20240229'
+		if (lower.includes('claude-2.1')) fallbackName = 'claude-2.1'
+		if (lower.includes('claude-2.0')) fallbackName = 'claude-2.0'
+		if (lower.includes('claude-instant-1.2')) fallbackName = 'claude-instant-1.2'
 		if (fallbackName) return { modelName: fallbackName, recognizedModelName: fallbackName, ...anthropicModelOptions[fallbackName] }
 		return null
 	},
@@ -604,8 +654,8 @@ const anthropicSettings: VoidStaticProviderInfo = {
 // ---------------- OPENAI ----------------
 const openAIModelOptions = { // https://platform.openai.com/docs/pricing
 	'o3': {
-		contextWindow: 1_047_576,
-		reservedOutputTokenSpace: 32_768,
+		contextWindow: 200000,
+		reservedOutputTokenSpace: 100000,
 		cost: { input: 10.00, output: 40.00, cache_read: 2.50 },
 		downloadable: false,
 		supportsFIM: false,
@@ -614,8 +664,8 @@ const openAIModelOptions = { // https://platform.openai.com/docs/pricing
 		reasoningCapabilities: { supportsReasoning: true, canTurnOffReasoning: false, canIOReasoning: false, reasoningSlider: { type: 'effort_slider', values: ['low', 'medium', 'high'], default: 'low' } },
 	},
 	'o4-mini': {
-		contextWindow: 1_047_576,
-		reservedOutputTokenSpace: 32_768,
+		contextWindow: 200000,
+		reservedOutputTokenSpace: 100000,
 		cost: { input: 1.10, output: 4.40, cache_read: 0.275 },
 		downloadable: false,
 		supportsFIM: false,
@@ -624,8 +674,8 @@ const openAIModelOptions = { // https://platform.openai.com/docs/pricing
 		reasoningCapabilities: { supportsReasoning: true, canTurnOffReasoning: false, canIOReasoning: false, reasoningSlider: { type: 'effort_slider', values: ['low', 'medium', 'high'], default: 'low' } },
 	},
 	'gpt-4.1': {
-		contextWindow: 1_047_576,
-		reservedOutputTokenSpace: 32_768,
+		contextWindow: 128000,
+		reservedOutputTokenSpace: 32768,
 		cost: { input: 2.00, output: 8.00, cache_read: 0.50 },
 		downloadable: false,
 		supportsFIM: false,
@@ -634,8 +684,8 @@ const openAIModelOptions = { // https://platform.openai.com/docs/pricing
 		reasoningCapabilities: false,
 	},
 	'gpt-4.1-mini': {
-		contextWindow: 1_047_576,
-		reservedOutputTokenSpace: 32_768,
+		contextWindow: 128000,
+		reservedOutputTokenSpace: 32768,
 		cost: { input: 0.40, output: 1.60, cache_read: 0.10 },
 		downloadable: false,
 		supportsFIM: false,
@@ -644,8 +694,8 @@ const openAIModelOptions = { // https://platform.openai.com/docs/pricing
 		reasoningCapabilities: false,
 	},
 	'gpt-4.1-nano': {
-		contextWindow: 1_047_576,
-		reservedOutputTokenSpace: 32_768,
+		contextWindow: 128000,
+		reservedOutputTokenSpace: 32768,
 		cost: { input: 0.10, output: 0.40, cache_read: 0.03 },
 		downloadable: false,
 		supportsFIM: false,
@@ -654,8 +704,8 @@ const openAIModelOptions = { // https://platform.openai.com/docs/pricing
 		reasoningCapabilities: false,
 	},
 	'o1': {
-		contextWindow: 128_000,
-		reservedOutputTokenSpace: 100_000,
+		contextWindow: 128000,
+		reservedOutputTokenSpace: 100000,
 		cost: { input: 15.00, cache_read: 7.50, output: 60.00, },
 		downloadable: false,
 		supportsFIM: false,
@@ -663,8 +713,8 @@ const openAIModelOptions = { // https://platform.openai.com/docs/pricing
 		reasoningCapabilities: { supportsReasoning: true, canTurnOffReasoning: false, canIOReasoning: false, reasoningSlider: { type: 'effort_slider', values: ['low', 'medium', 'high'], default: 'low' } },
 	},
 	'o3-mini': {
-		contextWindow: 200_000,
-		reservedOutputTokenSpace: 100_000,
+		contextWindow: 200000,
+		reservedOutputTokenSpace: 100000,
 		cost: { input: 1.10, cache_read: 0.55, output: 4.40, },
 		downloadable: false,
 		supportsFIM: false,
@@ -672,8 +722,8 @@ const openAIModelOptions = { // https://platform.openai.com/docs/pricing
 		reasoningCapabilities: { supportsReasoning: true, canTurnOffReasoning: false, canIOReasoning: false, reasoningSlider: { type: 'effort_slider', values: ['low', 'medium', 'high'], default: 'low' } },
 	},
 	'gpt-4o': {
-		contextWindow: 128_000,
-		reservedOutputTokenSpace: 16_384,
+		contextWindow: 128000,
+		reservedOutputTokenSpace: 16384,
 		cost: { input: 2.50, cache_read: 1.25, output: 10.00, },
 		downloadable: false,
 		supportsFIM: false,
@@ -682,8 +732,8 @@ const openAIModelOptions = { // https://platform.openai.com/docs/pricing
 		reasoningCapabilities: false,
 	},
 	'o1-mini': {
-		contextWindow: 128_000,
-		reservedOutputTokenSpace: 65_536,
+		contextWindow: 128000,
+		reservedOutputTokenSpace: 65536,
 		cost: { input: 1.10, cache_read: 0.55, output: 4.40, },
 		downloadable: false,
 		supportsFIM: false,
@@ -691,8 +741,8 @@ const openAIModelOptions = { // https://platform.openai.com/docs/pricing
 		reasoningCapabilities: { supportsReasoning: true, canTurnOffReasoning: false, canIOReasoning: false, reasoningSlider: { type: 'effort_slider', values: ['low', 'medium', 'high'], default: 'low' } },
 	},
 	'gpt-4o-mini': {
-		contextWindow: 128_000,
-		reservedOutputTokenSpace: 16_384,
+		contextWindow: 128000,
+		reservedOutputTokenSpace: 16384,
 		cost: { input: 0.15, cache_read: 0.075, output: 0.60, },
 		downloadable: false,
 		supportsFIM: false,
@@ -807,10 +857,26 @@ const xAISettings: VoidStaticProviderInfo = {
 // ---------------- GEMINI ----------------
 const geminiModelOptions = { // https://ai.google.dev/gemini-api/docs/pricing
 	// https://ai.google.dev/gemini-api/docs/thinking#set-budget
+	'gemini-2.5-pro-latest': {
+		contextWindow: 1000000,
+		reservedOutputTokenSpace: 8192,
+		cost: { input: 1.25, output: 10.00 },
+		downloadable: false,
+		supportsFIM: false,
+		supportsSystemMessage: 'separated',
+		specialToolFormat: 'gemini-style',
+		reasoningCapabilities: {
+			supportsReasoning: true,
+			canTurnOffReasoning: true,
+			canIOReasoning: false,
+			reasoningSlider: { type: 'budget_slider', min: 1024, max: 8192, default: 1024 }, // max is really 24576
+			reasoningReservedOutputTokenSpace: 8192,
+		},
+	},
 	'gemini-2.5-pro-preview-05-06': {
-		contextWindow: 1_048_576,
-		reservedOutputTokenSpace: 8_192,
-		cost: { input: 0, output: 0 },
+		contextWindow: 1000000,
+		reservedOutputTokenSpace: 8192,
+		cost: { input: 0.625, output: 5.00 },
 		downloadable: false,
 		supportsFIM: false,
 		supportsSystemMessage: 'separated',
@@ -824,9 +890,9 @@ const geminiModelOptions = { // https://ai.google.dev/gemini-api/docs/pricing
 		},
 	},
 	'gemini-2.0-flash-lite': {
-		contextWindow: 1_048_576,
-		reservedOutputTokenSpace: 8_192,
-		cost: { input: 0, output: 0 },
+		contextWindow: 1000000,
+		reservedOutputTokenSpace: 8192,
+		cost: { input: 0.15, output: 1.25 },
 		downloadable: false,
 		supportsFIM: false,
 		supportsSystemMessage: 'separated',
@@ -834,9 +900,9 @@ const geminiModelOptions = { // https://ai.google.dev/gemini-api/docs/pricing
 		reasoningCapabilities: false, // no reasoning
 	},
 	'gemini-2.5-flash-preview-04-17': {
-		contextWindow: 1_048_576,
-		reservedOutputTokenSpace: 8_192,
-		cost: { input: 0.15, output: .60 }, // TODO $3.50 output with thinking not included
+		contextWindow: 1000000,
+		reservedOutputTokenSpace: 8192,
+		cost: { input: 0.30, output: 2.50 }, // TODO $3.50 output with thinking not included
 		downloadable: false,
 		supportsFIM: false,
 		supportsSystemMessage: 'separated',
@@ -850,9 +916,9 @@ const geminiModelOptions = { // https://ai.google.dev/gemini-api/docs/pricing
 		},
 	},
 	'gemini-2.5-pro-exp-03-25': {
-		contextWindow: 1_048_576,
-		reservedOutputTokenSpace: 8_192,
-		cost: { input: 0, output: 0 },
+		contextWindow: 1000000,
+		reservedOutputTokenSpace: 8192,
+		cost: { input: 1.25, output: 10.00 },
 		downloadable: false,
 		supportsFIM: false,
 		supportsSystemMessage: 'separated',
@@ -988,7 +1054,7 @@ const mistralModelOptions = { // https://mistral.ai/products/la-plateforme#prici
 	'magistral-medium-latest': {
 		contextWindow: 256_000,
 		reservedOutputTokenSpace: 8_192,
-		cost: { input: 0.30, output: 0.90 }, // TODO: check this
+		cost: { input: 2.00, output: 5.00 },
 		supportsFIM: true,
 		downloadable: { sizeGb: 13 },
 		supportsSystemMessage: 'system-role',
@@ -997,7 +1063,7 @@ const mistralModelOptions = { // https://mistral.ai/products/la-plateforme#prici
 	'magistral-small-latest': {
 		contextWindow: 40_000,
 		reservedOutputTokenSpace: 8_192,
-		cost: { input: 0.30, output: 0.90 }, // TODO: check this
+		cost: { input: 0.20, output: 0.60 },
 		supportsFIM: true,
 		downloadable: { sizeGb: 13 },
 		supportsSystemMessage: 'system-role',

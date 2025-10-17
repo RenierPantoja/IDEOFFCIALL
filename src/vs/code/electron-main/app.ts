@@ -127,6 +127,7 @@ import ErrorTelemetry from '../../platform/telemetry/electron-main/errorTelemetr
 // ignore the eslint errors below
 import { IMetricsService } from '../../workbench/contrib/void/common/metricsService.js';
 import { IVoidUpdateService } from '../../workbench/contrib/void/common/voidUpdateService.js';
+import { IVoidSettingsService } from '../../workbench/contrib/void/common/voidSettingsService.js';
 import { MetricsMainService } from '../../workbench/contrib/void/electron-main/metricsMainService.js';
 import { VoidMainUpdateService } from '../../workbench/contrib/void/electron-main/voidUpdateMainService.js';
 import { LLMMessageChannel } from '../../workbench/contrib/void/electron-main/sendLLMMessageChannel.js';
@@ -1243,7 +1244,7 @@ export class CodeApplication extends Disposable {
 		const voidUpdatesChannel = ProxyChannel.fromService(accessor.get(IVoidUpdateService), disposables);
 		mainProcessElectronServer.registerChannel('void-channel-update', voidUpdatesChannel);
 
-		const sendLLMMessageChannel = new LLMMessageChannel(accessor.get(IMetricsService));
+		const sendLLMMessageChannel = new LLMMessageChannel(accessor.get(IMetricsService), accessor.get(IVoidSettingsService));
 		mainProcessElectronServer.registerChannel('void-channel-llmMessage', sendLLMMessageChannel);
 
 		// Void added this

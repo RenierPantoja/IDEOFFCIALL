@@ -10,10 +10,12 @@ import { IEncryptionService } from '../../../../platform/encryption/common/encry
 import { registerSingleton, InstantiationType } from '../../../../platform/instantiation/common/extensions.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import { ILogService } from '../../../../platform/log/common/log.js';
 import { IMetricsService } from './metricsService.js';
 import { defaultProviderSettings, getModelCapabilities, ModelOverrides } from './modelCapabilities.js';
 import { VOID_SETTINGS_STORAGE_KEY } from './storageKeys.js';
-import { defaultSettingsOfProvider, FeatureName, ProviderName, ModelSelectionOfFeature, SettingsOfProvider, SettingName, providerNames, ModelSelection, modelSelectionsEqual, featureNames, VoidStatefulModelInfo, GlobalSettings, GlobalSettingName, defaultGlobalSettings, ModelSelectionOptions, OptionsOfModelSelection, ChatMode, OverridesOfModel, defaultOverridesOfModel, MCPUserStateOfName as MCPUserStateOfName, MCPUserState } from './voidSettingsTypes.js';
+import { defaultSettingsOfProvider, FeatureName, ProviderName, ModelSelectionOfFeature, SettingsOfProvider, SettingName, providerNames, ModelSelection, modelSelectionsEqual, featureNames, VoidStatefulModelInfo, GlobalSettings, GlobalSettingName, defaultGlobalSettings, ModelSelectionOptions, OptionsOfModelSelection, ChatMode, OverridesOfModel, defaultOverridesOfModel, MCPUserStateOfName as MCPUserStateOfName, MCPUserState, ProviderLimits } from './voidSettingsTypes.js';
+import { TokenUsageTracker } from './tokenUsageTracker.js';
 
 
 // name is the name in the dropdown
@@ -75,6 +77,18 @@ export interface IVoidSettingsService {
 	toggleModelHidden(providerName: ProviderName, modelName: string): void;
 	addModel(providerName: ProviderName, modelName: string): void;
 	deleteModel(providerName: ProviderName, modelName: string): boolean;
+
+	// Multiple API Keys management
+	addApiKey(providerName: ProviderName, apiKey: string): Promise<void>;
+	removeApiKey(providerName: ProviderName, keyIndex: number): Promise<void>;
+	rotateToNextApiKey(providerName: ProviderName): Promise<void>;
+	getCurrentApiKey(providerName: ProviderName): string | undefined;
+
+	// Token usage tracking and proactive rotation
+	trackTokenUsage(providerName: ProviderName, tokensUsed: number, requestType?: string): Promise<void>;
+	shouldRotateProactively(providerName: ProviderName): Promise<boolean>;
+	getTokenUsageStats(providerName: ProviderName): Promise<any>;
+	resetTokenUsage(providerName: ProviderName, keyIndex?: number): Promise<void>;
 
 	addMCPUserStateOfNames(userStateOfName: MCPUserStateOfName): Promise<void>;
 	removeMCPUserStateOfNames(serverNames: string[]): Promise<void>;
@@ -233,6 +247,7 @@ class VoidSettingsService extends Disposable implements IVoidSettingsService {
 	readonly onDidChangeState: Event<void> = this._onDidChangeState.event; // this is primarily for use in react, so react can listen + update on state changes
 
 	state: VoidSettingsState;
+	private readonly _tokenUsageTracker: TokenUsageTracker;
 
 	private readonly _resolver: () => void
 	waitForInitState: Promise<void> // await this if you need a valid state initially
@@ -241,6 +256,7 @@ class VoidSettingsService extends Disposable implements IVoidSettingsService {
 		@IStorageService private readonly _storageService: IStorageService,
 		@IEncryptionService private readonly _encryptionService: IEncryptionService,
 		@IMetricsService private readonly _metricsService: IMetricsService,
+		@ILogService private readonly _logService: ILogService,
 		// could have used this, but it's clearer the way it is (+ slightly different eg StorageTarget.USER)
 		// @ISecretStorageService private readonly _secretStorageService: ISecretStorageService,
 	) {
@@ -248,11 +264,13 @@ class VoidSettingsService extends Disposable implements IVoidSettingsService {
 
 		// at the start, we haven't read the partial config yet, but we need to set state to something
 		this.state = defaultState()
+		this._tokenUsageTracker = new TokenUsageTracker(this._storageService, this._logService);
 		let resolver: () => void = () => { }
 		this.waitForInitState = new Promise((res, rej) => resolver = res)
 		this._resolver = resolver
 
 		this.readAndInitializeState()
+		this._logService.info('[VoidSettingsService] Initialized with logging and token usage tracking');
 	}
 
 
@@ -607,6 +625,116 @@ class VoidSettingsService extends Disposable implements IVoidSettingsService {
 		}
 		await this._setMCPUserStateOfName(newMCPServerStates)
 		this._metricsService.capture('Update MCP Server State', { serverName, state });
+	}
+
+	// Multiple API Keys management methods
+	addApiKey = async (providerName: ProviderName, apiKey: string) => {
+		const currentSettings = this.state.settingsOfProvider[providerName];
+		const currentKeys = currentSettings.apiKeys || [];
+		
+		// Avoid duplicate keys
+		if (currentKeys.includes(apiKey)) {
+			return;
+		}
+
+		const newKeys = [...currentKeys, apiKey];
+		
+		await this.setSettingOfProvider(providerName, 'apiKeys', newKeys);
+		
+		// If this is the first key, set it as current
+		if (currentKeys.length === 0) {
+			await this.setSettingOfProvider(providerName, 'currentKeyIndex', 0);
+		}
+
+		this._metricsService.capture('Add API Key', { providerName, keyCount: newKeys.length });
+	}
+
+	removeApiKey = async (providerName: ProviderName, keyIndex: number) => {
+		const currentSettings = this.state.settingsOfProvider[providerName];
+		const currentKeys = currentSettings.apiKeys || [];
+		const currentKeyIndex = currentSettings.currentKeyIndex || 0;
+
+		if (keyIndex < 0 || keyIndex >= currentKeys.length) {
+			return;
+		}
+
+		const newKeys = currentKeys.filter((_, index) => index !== keyIndex);
+		await this.setSettingOfProvider(providerName, 'apiKeys', newKeys);
+
+		// Adjust current key index if necessary
+		let newCurrentIndex = currentKeyIndex;
+		if (keyIndex <= currentKeyIndex && newKeys.length > 0) {
+			newCurrentIndex = Math.max(0, currentKeyIndex - 1);
+		} else if (newKeys.length === 0) {
+			newCurrentIndex = 0;
+		} else if (currentKeyIndex >= newKeys.length) {
+			newCurrentIndex = newKeys.length - 1;
+		}
+
+		await this.setSettingOfProvider(providerName, 'currentKeyIndex', newCurrentIndex);
+
+		this._metricsService.capture('Remove API Key', { providerName, keyCount: newKeys.length });
+	}
+
+	rotateToNextApiKey = async (providerName: ProviderName) => {
+		const currentSettings = this.state.settingsOfProvider[providerName];
+		const currentKeys = currentSettings.apiKeys || [];
+		const currentKeyIndex = currentSettings.currentKeyIndex || 0;
+
+		if (currentKeys.length <= 1) {
+			this._logService.warn(`[VoidSettingsService] Cannot rotate API key for ${providerName}: insufficient keys`);
+			return; // No rotation needed
+		}
+
+		const nextIndex = (currentKeyIndex + 1) % currentKeys.length;
+		this._logService.info(`[VoidSettingsService] Rotating API key for ${providerName} from index ${currentKeyIndex} to ${nextIndex}`);
+		await this.setSettingOfProvider(providerName, 'currentKeyIndex', nextIndex);
+
+		this._metricsService.capture('Rotate API Key', { providerName, newIndex: nextIndex });
+	}
+
+	getCurrentApiKey = (providerName: ProviderName): string | undefined => {
+		const currentSettings = this.state.settingsOfProvider[providerName];
+		const currentKeys = currentSettings.apiKeys || [];
+		const currentKeyIndex = currentSettings.currentKeyIndex || 0;
+
+		// Fallback to legacy apiKey if no keys in array
+		if (currentKeys.length === 0) {
+			return currentSettings.apiKey as string;
+		}
+
+		return currentKeys[currentKeyIndex];
+	}
+
+	// Token usage tracking and proactive rotation methods
+	trackTokenUsage = async (providerName: ProviderName, tokensUsed: number, requestType?: string): Promise<void> => {
+		this._logService.debug(`[VoidSettingsService] Tracking token usage for ${providerName}: tokens=${tokensUsed}`);
+		this._tokenUsageTracker.recordUsage(providerName, tokensUsed)
+	}
+
+	shouldRotateProactively = async (providerName: ProviderName): Promise<boolean> => {
+		const providerLimits = this.state.settingsOfProvider[providerName].providerLimits
+		
+		if (!providerLimits) return false
+		
+		const shouldRotate = this._tokenUsageTracker.shouldRotateProactively(providerName, providerLimits)
+		if (shouldRotate) {
+			this._logService.info(`[VoidSettingsService] Proactive rotation recommended for ${providerName}`);
+		}
+		return shouldRotate
+	}
+
+	getTokenUsageStats = async (providerName: ProviderName): Promise<any> => {
+		const providerLimits = this.state.settingsOfProvider[providerName].providerLimits
+		
+		if (!providerLimits) return null
+		
+		return this._tokenUsageTracker.getUsageStats(providerName, providerLimits)
+	}
+
+	resetTokenUsage = async (providerName: ProviderName, keyIndex?: number): Promise<void> => {
+		this._logService.info(`[VoidSettingsService] Resetting token usage for ${providerName}`);
+		this._tokenUsageTracker.resetUsage(providerName)
 	}
 
 }

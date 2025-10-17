@@ -7,6 +7,7 @@
 import { defaultModelsOfProvider, defaultProviderSettings, ModelOverrides } from './modelCapabilities.js';
 import { ToolApprovalType } from './toolsServiceTypes.js';
 import { VoidSettingsState } from './voidSettingsService.js'
+import { defaultProviderLimits } from './providerLimitsConfig.js';
 
 
 type UnionOfKeys<T> = T extends T ? keyof T : never;
@@ -37,9 +38,37 @@ export type VoidStatefulModelInfo = { // <-- STATEFUL
 
 
 
+// Token usage tracking types
+export type TokenUsageData = {
+	tokensUsed: number;
+	requestCount: number;
+	lastResetTime: number; // timestamp
+	windowStartTime: number; // timestamp for current usage window
+}
+
+export type ApiKeyUsageData = {
+	[keyIndex: number]: TokenUsageData;
+}
+
+export type ProviderLimits = {
+	tokensPerMinute?: number;
+	tokensPerHour?: number;
+	tokensPerDay?: number;
+	requestsPerMinute?: number;
+	requestsPerHour?: number;
+	requestsPerDay?: number;
+	maxTokensTotal?: number; // for providers with absolute limits
+	resetWindowHours?: number; // how often limits reset (default 24h)
+	proactiveThreshold?: number; // percentage (0-1) to trigger rotation before limit
+}
+
 type CommonProviderSettings = {
 	_didFillInProviderSettings: boolean | undefined, // undefined initially, computed when user types in all fields
 	models: VoidStatefulModelInfo[],
+	apiKeys?: string[], // array of API keys for rotation
+	currentKeyIndex?: number, // index of currently active key
+	apiKeyUsage?: ApiKeyUsageData, // token usage tracking per key
+	providerLimits?: ProviderLimits, // limits configuration for this provider
 }
 
 export type SettingsAtProvider<providerName extends ProviderName> = CustomProviderSettings<providerName> & CommonProviderSettings
@@ -261,96 +290,160 @@ export const defaultSettingsOfProvider: SettingsOfProvider = {
 		...defaultProviderSettings.anthropic,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.anthropic),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.anthropic,
 	},
 	openAI: {
 		...defaultCustomSettings,
 		...defaultProviderSettings.openAI,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.openAI),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.openAI,
 	},
 	deepseek: {
 		...defaultCustomSettings,
 		...defaultProviderSettings.deepseek,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.deepseek),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.deepseek,
 	},
 	gemini: {
 		...defaultCustomSettings,
 		...defaultProviderSettings.gemini,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.gemini),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.gemini,
 	},
 	xAI: {
 		...defaultCustomSettings,
 		...defaultProviderSettings.xAI,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.xAI),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.xAI,
 	},
 	mistral: {
 		...defaultCustomSettings,
 		...defaultProviderSettings.mistral,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.mistral),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.mistral,
 	},
 	liteLLM: {
 		...defaultCustomSettings,
 		...defaultProviderSettings.liteLLM,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.liteLLM),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.liteLLM,
 	},
 	lmStudio: {
 		...defaultCustomSettings,
 		...defaultProviderSettings.lmStudio,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.lmStudio),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.lmStudio,
 	},
 	groq: { // aggregator (serves models from multiple providers)
 		...defaultCustomSettings,
 		...defaultProviderSettings.groq,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.groq),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.groq,
 	},
 	openRouter: { // aggregator (serves models from multiple providers)
 		...defaultCustomSettings,
 		...defaultProviderSettings.openRouter,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.openRouter),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.openRouter,
 	},
 	openAICompatible: { // aggregator (serves models from multiple providers)
 		...defaultCustomSettings,
 		...defaultProviderSettings.openAICompatible,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.openAICompatible),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.openAICompatible,
 	},
 	ollama: { // aggregator (serves models from multiple providers)
 		...defaultCustomSettings,
 		...defaultProviderSettings.ollama,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.ollama),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.ollama,
 	},
 	vLLM: { // aggregator (serves models from multiple providers)
 		...defaultCustomSettings,
 		...defaultProviderSettings.vLLM,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.vLLM),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.vLLM,
 	},
 	googleVertex: { // aggregator (serves models from multiple providers)
 		...defaultCustomSettings,
 		...defaultProviderSettings.googleVertex,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.googleVertex),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.googleVertex,
 	},
 	microsoftAzure: { // aggregator (serves models from multiple providers)
 		...defaultCustomSettings,
 		...defaultProviderSettings.microsoftAzure,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.microsoftAzure),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.microsoftAzure,
 	},
 	awsBedrock: { // aggregator (serves models from multiple providers)
 		...defaultCustomSettings,
 		...defaultProviderSettings.awsBedrock,
 		...modelInfoOfDefaultModelNames(defaultModelsOfProvider.awsBedrock),
 		_didFillInProviderSettings: undefined,
+		apiKeys: [],
+		currentKeyIndex: 0,
+		apiKeyUsage: {},
+		providerLimits: defaultProviderLimits.awsBedrock,
 	},
 }
 

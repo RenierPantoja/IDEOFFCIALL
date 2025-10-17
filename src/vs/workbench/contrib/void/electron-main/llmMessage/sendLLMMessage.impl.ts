@@ -20,6 +20,7 @@ import { getSendableReasoningInfo, getModelCapabilities, getProviderCapabilities
 import { extractReasoningWrapper, extractXMLToolsWrapper } from './extractGrammar.js';
 import { availableTools, InternalToolInfo } from '../../common/prompt/prompts.js';
 import { generateUuid } from '../../../../../base/common/uuid.js';
+import { IVoidSettingsService } from '../../common/voidSettingsService.js';
 
 const getGoogleApiKey = async () => {
 	// module‑level singleton
@@ -42,6 +43,7 @@ type InternalCommonMessageParams = {
 	overridesOfModel: OverridesOfModel | undefined;
 	modelName: string;
 	_setAborter: (aborter: () => void) => void;
+	voidSettingsService?: IVoidSettingsService;
 }
 
 type SendChatParams_Internal = InternalCommonMessageParams & {
@@ -69,14 +71,27 @@ const parseHeadersJSON = (s: string | undefined): Record<string, string | null |
 	}
 }
 
-const newOpenAICompatibleSDK = async ({ settingsOfProvider, providerName, includeInPayload }: { settingsOfProvider: SettingsOfProvider, providerName: ProviderName, includeInPayload?: { [s: string]: any } }) => {
+const newOpenAICompatibleSDK = async ({ settingsOfProvider, providerName, includeInPayload, voidSettingsService }: { settingsOfProvider: SettingsOfProvider, providerName: ProviderName, includeInPayload?: { [s: string]: any }, voidSettingsService?: IVoidSettingsService }) => {
 	const commonPayloadOpts: ClientOptions = {
 		dangerouslyAllowBrowser: true,
 		...includeInPayload,
 	}
+	
+	// Helper function to get API key with rotation support
+	const getApiKey = (providerConfig: any): string => {
+		if (voidSettingsService) {
+			const currentKey = voidSettingsService.getCurrentApiKey(providerName);
+			if (currentKey) {
+				return currentKey;
+			}
+		}
+		// Fallback to legacy apiKey
+		return providerConfig.apiKey || '';
+	};
+	
 	if (providerName === 'openAI') {
 		const thisConfig = settingsOfProvider[providerName]
-		return new OpenAI({ apiKey: thisConfig.apiKey, ...commonPayloadOpts })
+		return new OpenAI({ apiKey: getApiKey(thisConfig), ...commonPayloadOpts })
 	}
 	else if (providerName === 'ollama') {
 		const thisConfig = settingsOfProvider[providerName]
@@ -98,7 +113,7 @@ const newOpenAICompatibleSDK = async ({ settingsOfProvider, providerName, includ
 		const thisConfig = settingsOfProvider[providerName]
 		return new OpenAI({
 			baseURL: 'https://openrouter.ai/api/v1',
-			apiKey: thisConfig.apiKey,
+				apiKey: getApiKey(thisConfig),
 			defaultHeaders: {
 				'HTTP-Referer': 'https://voideditor.com', // Optional, for including your app on openrouter.ai rankings.
 				'X-Title': 'Void', // Optional. Shows in rankings on openrouter.ai.
@@ -119,7 +134,7 @@ const newOpenAICompatibleSDK = async ({ settingsOfProvider, providerName, includ
 		const thisConfig = settingsOfProvider[providerName]
 		const endpoint = `https://${thisConfig.project}.openai.azure.com/`;
 		const apiVersion = thisConfig.azureApiVersion ?? '2024-04-01-preview';
-		const options = { endpoint, apiKey: thisConfig.apiKey, apiVersion };
+		const options = { endpoint, apiKey: getApiKey(thisConfig), apiVersion };
 		return new AzureOpenAI({ ...options, ...commonPayloadOpts });
 	}
 	else if (providerName === 'awsBedrock') {
@@ -142,37 +157,37 @@ const newOpenAICompatibleSDK = async ({ settingsOfProvider, providerName, includ
 		if (!baseURL.endsWith('/v1'))
 			baseURL = baseURL.replace(/\/+$/, '') + '/v1'
 
-		return new OpenAI({ baseURL, apiKey, ...commonPayloadOpts })
+		return new OpenAI({ baseURL, apiKey: getApiKey(settingsOfProvider.awsBedrock), ...commonPayloadOpts })
 	}
 
 
 	else if (providerName === 'deepseek') {
 		const thisConfig = settingsOfProvider[providerName]
-		return new OpenAI({ baseURL: 'https://api.deepseek.com/v1', apiKey: thisConfig.apiKey, ...commonPayloadOpts })
+		return new OpenAI({ baseURL: 'https://api.deepseek.com/v1', apiKey: getApiKey(thisConfig), ...commonPayloadOpts })
 	}
 	else if (providerName === 'openAICompatible') {
 		const thisConfig = settingsOfProvider[providerName]
 		const headers = parseHeadersJSON(thisConfig.headersJSON)
-		return new OpenAI({ baseURL: thisConfig.endpoint, apiKey: thisConfig.apiKey, defaultHeaders: headers, ...commonPayloadOpts })
+		return new OpenAI({ baseURL: thisConfig.endpoint, apiKey: getApiKey(thisConfig), defaultHeaders: headers, ...commonPayloadOpts })
 	}
 	else if (providerName === 'groq') {
 		const thisConfig = settingsOfProvider[providerName]
-		return new OpenAI({ baseURL: 'https://api.groq.com/openai/v1', apiKey: thisConfig.apiKey, ...commonPayloadOpts })
+		return new OpenAI({ baseURL: 'https://api.groq.com/openai/v1', apiKey: getApiKey(thisConfig), ...commonPayloadOpts })
 	}
 	else if (providerName === 'xAI') {
 		const thisConfig = settingsOfProvider[providerName]
-		return new OpenAI({ baseURL: 'https://api.x.ai/v1', apiKey: thisConfig.apiKey, ...commonPayloadOpts })
+		return new OpenAI({ baseURL: 'https://api.x.ai/v1', apiKey: getApiKey(thisConfig), ...commonPayloadOpts })
 	}
 	else if (providerName === 'mistral') {
 		const thisConfig = settingsOfProvider[providerName]
-		return new OpenAI({ baseURL: 'https://api.mistral.ai/v1', apiKey: thisConfig.apiKey, ...commonPayloadOpts })
+		return new OpenAI({ baseURL: 'https://api.mistral.ai/v1', apiKey: getApiKey(thisConfig), ...commonPayloadOpts })
 	}
 
 	else throw new Error(`Void providerName was invalid: ${providerName}.`)
 }
 
 
-const _sendOpenAICompatibleFIM = async ({ messages: { prefix, suffix, stopTokens }, onFinalMessage, onError, settingsOfProvider, modelName: modelName_, _setAborter, providerName, overridesOfModel }: SendFIMParams_Internal) => {
+const _sendOpenAICompatibleFIM = async ({ messages: { prefix, suffix, stopTokens }, onFinalMessage, onError, settingsOfProvider, modelName: modelName_, _setAborter, providerName, overridesOfModel, voidSettingsService }: SendFIMParams_Internal) => {
 
 	const {
 		modelName,
@@ -188,7 +203,7 @@ const _sendOpenAICompatibleFIM = async ({ messages: { prefix, suffix, stopTokens
 		return
 	}
 
-	const openai = await newOpenAICompatibleSDK({ providerName, settingsOfProvider, includeInPayload: additionalOpenAIPayload })
+	const openai = await newOpenAICompatibleSDK({ providerName, settingsOfProvider, includeInPayload: additionalOpenAIPayload, voidSettingsService })
 	openai.completions
 		.create({
 			model: modelName,
@@ -201,8 +216,29 @@ const _sendOpenAICompatibleFIM = async ({ messages: { prefix, suffix, stopTokens
 			const fullText = response.choices[0]?.text
 			onFinalMessage({ fullText, fullReasoning: '', anthropicReasoning: null });
 		})
-		.catch(error => {
-			if (error instanceof OpenAI.APIError && error.status === 401) { onError({ message: invalidApiKeyMessage(providerName), fullError: error }); }
+		.catch(async error => {
+			// Check if it's a rate limit error and we have multiple API keys
+			if ((error instanceof OpenAI.APIError && (error.status === 429 || error.status === 401)) && voidSettingsService) {
+				try {
+					// Try to rotate to next API key
+					await voidSettingsService.rotateToNextApiKey(providerName);
+					
+					// Retry with new API key
+					const newOpenai = await newOpenAICompatibleSDK({ providerName, settingsOfProvider, includeInPayload: additionalOpenAIPayload, voidSettingsService })
+					const retryResponse = await newOpenai.completions.create({
+						model: modelName,
+						prompt: prefix,
+						suffix: suffix,
+						stop: stopTokens,
+						max_tokens: 300,
+					});
+					const fullText = retryResponse.choices[0]?.text
+					onFinalMessage({ fullText, fullReasoning: '', anthropicReasoning: null });
+				} catch (retryError) {
+					if (retryError instanceof OpenAI.APIError && retryError.status === 401) { onError({ message: invalidApiKeyMessage(providerName), fullError: retryError }); }
+					else { onError({ message: retryError + '', fullError: retryError }); }
+				}
+			} else if (error instanceof OpenAI.APIError && error.status === 401) { onError({ message: invalidApiKeyMessage(providerName), fullError: error }); }
 			else { onError({ message: error + '', fullError: error }); }
 		})
 }
@@ -270,7 +306,21 @@ const rawToolCallObjOfAnthropicParams = (toolBlock: Anthropic.Messages.ToolUseBl
 // ------------ OPENAI-COMPATIBLE ------------
 
 
-const _sendOpenAICompatibleChat = async ({ messages, onText, onFinalMessage, onError, settingsOfProvider, modelSelectionOptions, modelName: modelName_, _setAborter, providerName, chatMode, separateSystemMessage, overridesOfModel, mcpTools }: SendChatParams_Internal) => {
+const _sendOpenAICompatibleChat = async ({ messages, onText, onFinalMessage, onError, settingsOfProvider, modelSelectionOptions, modelName: modelName_, _setAborter, providerName, chatMode, separateSystemMessage, overridesOfModel, mcpTools, voidSettingsService }: SendChatParams_Internal) => {
+	// Verificação proativa de rotação de chaves API
+	if (voidSettingsService && settingsOfProvider.apiKeys.length > 1) {
+		const shouldRotate = await voidSettingsService.shouldRotateProactively(providerName);
+		if (shouldRotate) {
+			console.log(`[TokenUsage] Rotação proativa ativada para ${providerName} - trocando para próxima chave`);
+			await voidSettingsService.rotateToNextApiKey(providerName);
+			// Atualizar settingsOfProvider com a nova chave
+			const updatedSettings = await voidSettingsService.getSettingsOfProvider(providerName);
+			if (updatedSettings) {
+				Object.assign(settingsOfProvider, updatedSettings);
+			}
+		}
+	}
+
 	const {
 		modelName,
 		specialToolFormat,
@@ -296,7 +346,7 @@ const _sendOpenAICompatibleChat = async ({ messages, onText, onFinalMessage, onE
 		: {}
 
 	// instance
-	const openai: OpenAI = await newOpenAICompatibleSDK({ providerName, settingsOfProvider, includeInPayload })
+	const openai: OpenAI = await newOpenAICompatibleSDK({ providerName, settingsOfProvider, includeInPayload, voidSettingsService })
 	if (providerName === 'microsoftAzure') {
 		// Required to select the model
 		(openai as AzureOpenAI).deploymentName = modelName;
@@ -375,15 +425,85 @@ const _sendOpenAICompatibleChat = async ({ messages, onText, onFinalMessage, onE
 				onError({ message: 'Void: Response from model was empty.', fullError: null })
 			}
 			else {
+				// Rastrear uso de tokens após resposta bem-sucedida
+				if (voidSettingsService) {
+					const estimatedTokens = voidSettingsService.estimateTokenCount(fullTextSoFar + fullReasoningSoFar);
+					await voidSettingsService.trackTokenUsage(providerName, estimatedTokens);
+				}
+
 				const toolCall = rawToolCallObjOfParamsStr(toolName, toolParamsStr, toolId)
 				const toolCallObj = toolCall ? { toolCall } : {}
 				onFinalMessage({ fullText: fullTextSoFar, fullReasoning: fullReasoningSoFar, anthropicReasoning: null, ...toolCallObj });
 			}
 		})
 		// when error/fail - this catches errors of both .create() and .then(for await)
-		.catch(error => {
-			if (error instanceof OpenAI.APIError && error.status === 401) { onError({ message: invalidApiKeyMessage(providerName), fullError: error }); }
-			else { onError({ message: error + '', fullError: error }); }
+		.catch(async error => {
+			// Check if it's a rate limit error or invalid API key and we have multiple API keys
+			if ((error instanceof OpenAI.APIError && (error.status === 429 || error.status === 401)) && voidSettingsService) {
+				try {
+					// Try to rotate to next API key
+					await voidSettingsService.rotateToNextApiKey(providerName);
+					
+					// Retry with new API key
+					const newOpenai = await newOpenAICompatibleSDK({ providerName, settingsOfProvider, includeInPayload, voidSettingsService })
+					if (providerName === 'microsoftAzure') {
+						(newOpenai as AzureOpenAI).deploymentName = modelName;
+					}
+					
+					const retryResponse = await newOpenai.chat.completions.create(options);
+					_setAborter(() => retryResponse.controller.abort())
+					
+					let retryFullReasoningSoFar = ''
+					let retryFullTextSoFar = ''
+					let retryToolName = ''
+					let retryToolId = ''
+					let retryToolParamsStr = ''
+					
+					for await (const chunk of retryResponse) {
+						const newText = chunk.choices[0]?.delta?.content ?? ''
+						retryFullTextSoFar += newText
+						
+						// Handle reasoning if present
+						if (nameOfReasoningFieldInDelta) {
+							const newReasoning = (chunk.choices[0]?.delta as any)?.[nameOfReasoningFieldInDelta] ?? ''
+							retryFullReasoningSoFar += newReasoning
+						}
+						
+						// Handle tool calls
+						const toolCalls = chunk.choices[0]?.delta?.tool_calls
+						if (toolCalls && toolCalls.length > 0) {
+							const toolCall = toolCalls[0]
+							if (toolCall.function?.name) retryToolName = toolCall.function.name
+							if (toolCall.id) retryToolId = toolCall.id
+							if (toolCall.function?.arguments) retryToolParamsStr += toolCall.function.arguments
+						}
+						
+						onText({
+							fullText: retryFullTextSoFar,
+							fullReasoning: retryFullReasoningSoFar,
+							toolCall: !retryToolName ? undefined : { name: retryToolName, rawParams: {}, isDone: false, doneParams: [], id: retryToolId },
+						})
+					}
+					
+					if (!retryFullTextSoFar && !retryFullReasoningSoFar && !retryToolName) {
+						onError({ message: 'Void: Response from model was empty.', fullError: null })
+					} else {
+						const toolCall = rawToolCallObjOfParamsStr(retryToolName, retryToolParamsStr, retryToolId)
+						const toolCallObj = toolCall ? { toolCall } : {}
+						onFinalMessage({ fullText: retryFullTextSoFar, fullReasoning: retryFullReasoningSoFar, anthropicReasoning: null, ...toolCallObj });
+					}
+				} catch (retryError) {
+					if (retryError instanceof OpenAI.APIError && retryError.status === 401) { 
+						onError({ message: invalidApiKeyMessage(providerName), fullError: retryError }); 
+					} else { 
+						onError({ message: retryError + '', fullError: retryError }); 
+					}
+				}
+			} else if (error instanceof OpenAI.APIError && error.status === 401) { 
+				onError({ message: invalidApiKeyMessage(providerName), fullError: error }); 
+			} else { 
+				onError({ message: error + '', fullError: error }); 
+			}
 		})
 }
 
@@ -395,7 +515,7 @@ type OpenAIModel = {
 	object: 'model';
 	owned_by: string;
 }
-const _openaiCompatibleList = async ({ onSuccess: onSuccess_, onError: onError_, settingsOfProvider, providerName }: ListParams_Internal<OpenAIModel>) => {
+const _openaiCompatibleList = async ({ onSuccess: onSuccess_, onError: onError_, settingsOfProvider, providerName, voidSettingsService }: ListParams_Internal<OpenAIModel> & { voidSettingsService?: IVoidSettingsService }) => {
 	const onSuccess = ({ models }: { models: OpenAIModel[] }) => {
 		onSuccess_({ models })
 	}
@@ -403,7 +523,7 @@ const _openaiCompatibleList = async ({ onSuccess: onSuccess_, onError: onError_,
 		onError_({ error })
 	}
 	try {
-		const openai = await newOpenAICompatibleSDK({ providerName, settingsOfProvider })
+		const openai = await newOpenAICompatibleSDK({ providerName, settingsOfProvider, voidSettingsService })
 		openai.models.list()
 			.then(async (response) => {
 				const models: OpenAIModel[] = []
@@ -455,7 +575,21 @@ const anthropicTools = (chatMode: ChatMode | null, mcpTools: InternalToolInfo[] 
 
 
 // ------------ ANTHROPIC ------------
-const sendAnthropicChat = async ({ messages, providerName, onText, onFinalMessage, onError, settingsOfProvider, modelSelectionOptions, overridesOfModel, modelName: modelName_, _setAborter, separateSystemMessage, chatMode, mcpTools }: SendChatParams_Internal) => {
+const sendAnthropicChat = async ({ messages, providerName, onText, onFinalMessage, onError, settingsOfProvider, modelSelectionOptions, overridesOfModel, modelName: modelName_, _setAborter, separateSystemMessage, chatMode, mcpTools, voidSettingsService }: SendChatParams_Internal) => {
+	// Verificação proativa de rotação de chaves API para Anthropic
+	if (voidSettingsService && settingsOfProvider.apiKeys.length > 1) {
+		const shouldRotate = await voidSettingsService.shouldRotateProactively(providerName);
+		if (shouldRotate) {
+			console.log(`[TokenUsage] Rotação proativa ativada para ${providerName} - trocando para próxima chave`);
+			await voidSettingsService.rotateToNextApiKey(providerName);
+			// Atualizar settingsOfProvider com a nova chave
+			const updatedSettings = await voidSettingsService.getSettingsOfProvider(providerName);
+			if (updatedSettings) {
+				Object.assign(settingsOfProvider, updatedSettings);
+			}
+		}
+	}
+
 	const {
 		modelName,
 		specialToolFormat,
@@ -567,6 +701,15 @@ const sendAnthropicChat = async ({ messages, providerName, onText, onFinalMessag
 		// console.log('TOOLS!!!!!!', JSON.stringify(response, null, 2))
 		const toolCall = tools[0] && rawToolCallObjOfAnthropicParams(tools[0])
 		const toolCallObj = toolCall ? { toolCall } : {}
+
+		// Track token usage after successful response
+		if (voidSettingsService && response.usage) {
+			const inputTokens = response.usage.input_tokens || 0
+			const outputTokens = response.usage.output_tokens || 0
+			const totalTokens = inputTokens + outputTokens
+			
+			voidSettingsService.trackTokenUsage(providerName, totalTokens)
+		}
 
 		onFinalMessage({ fullText, fullReasoning, anthropicReasoning, ...toolCallObj })
 	})
@@ -728,9 +871,24 @@ const sendGeminiChat = async ({
 	modelSelectionOptions,
 	chatMode,
 	mcpTools,
+	voidSettingsService,
 }: SendChatParams_Internal) => {
 
 	if (providerName !== 'gemini') throw new Error(`Sending Gemini chat, but provider was ${providerName}`)
+
+	// Verificação proativa de rotação de chaves API para Gemini
+	if (voidSettingsService && settingsOfProvider.apiKeys.length > 1) {
+		const shouldRotate = await voidSettingsService.shouldRotateProactively(providerName);
+		if (shouldRotate) {
+			console.log(`[TokenUsage] Rotação proativa ativada para ${providerName} - trocando para próxima chave`);
+			await voidSettingsService.rotateToNextApiKey(providerName);
+			// Atualizar settingsOfProvider com a nova chave
+			const updatedSettings = await voidSettingsService.getSettingsOfProvider(providerName);
+			if (updatedSettings) {
+				Object.assign(settingsOfProvider, updatedSettings);
+			}
+		}
+	}
 
 	const thisConfig = settingsOfProvider[providerName]
 
@@ -819,6 +977,12 @@ const sendGeminiChat = async ({
 			if (!fullTextSoFar && !fullReasoningSoFar && !toolName) {
 				onError({ message: 'Void: Response from model was empty.', fullError: null })
 			} else {
+				// Rastrear uso de tokens após resposta bem-sucedida para Gemini
+				if (voidSettingsService) {
+					const estimatedTokens = voidSettingsService.estimateTokenCount(fullTextSoFar + fullReasoningSoFar);
+					await voidSettingsService.trackTokenUsage(providerName, estimatedTokens);
+				}
+
 				if (!toolId) toolId = generateUuid() // ids are empty, but other providers might expect an id
 				const toolCall = rawToolCallObjOfParamsStr(toolName, toolParamsStr, toolId)
 				const toolCallObj = toolCall ? { toolCall } : {}

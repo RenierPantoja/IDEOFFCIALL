@@ -13,6 +13,7 @@ import { URI } from '../../../../../../../base/common/uri.js'
 import { ModelDropdown } from './ModelDropdown.js'
 import { ChatMarkdownRender } from '../markdown/ChatMarkdownRender.js'
 import { WarningBox } from './WarningBox.js'
+import { KeyMonitoringPanel } from './KeyMonitoringPanel.js'
 import { os } from '../../../../common/helpers/systemInfo.js'
 import { IconLoading } from '../sidebar-tsx/SidebarChat.js'
 import { ToolApprovalType, toolApprovalTypes } from '../../../../common/toolsServiceTypes.js'
@@ -28,6 +29,7 @@ type Tab =
 	| 'models'
 	| 'localProviders'
 	| 'providers'
+	| 'keyMonitoring'
 	| 'featureOptions'
 	| 'mcp'
 	| 'general'
@@ -610,6 +612,130 @@ export const ModelDump = ({ filteredProviders }: { filteredProviders?: ProviderN
 
 // providers
 
+const MultipleApiKeysManager = ({ providerName }: { providerName: ProviderName }) => {
+	const accessor = useAccessor()
+	const voidSettingsService = accessor.get('IVoidSettingsService')
+	const settingsState = useSettingsState()
+	
+	const [newKeyInput, setNewKeyInput] = useState('')
+	const [showAddInput, setShowAddInput] = useState(false)
+	
+	const currentSettings = settingsState.settingsOfProvider[providerName]
+	const apiKeys = currentSettings.apiKeys || []
+	const currentKeyIndex = currentSettings.currentKeyIndex || 0
+	const legacyApiKey = currentSettings.apiKey as string
+
+	// If we have legacy apiKey but no keys in array, migrate it
+	useEffect(() => {
+		if (legacyApiKey && apiKeys.length === 0) {
+			voidSettingsService.addApiKey(providerName, legacyApiKey)
+		}
+	}, [legacyApiKey, apiKeys.length, providerName, voidSettingsService])
+
+	const handleAddKey = useCallback(async () => {
+		if (newKeyInput.trim()) {
+			await voidSettingsService.addApiKey(providerName, newKeyInput.trim())
+			setNewKeyInput('')
+			setShowAddInput(false)
+		}
+	}, [newKeyInput, providerName, voidSettingsService])
+
+	const handleRemoveKey = useCallback(async (keyIndex: number) => {
+		await voidSettingsService.removeApiKey(providerName, keyIndex)
+	}, [providerName, voidSettingsService])
+
+	const handleRotateKey = useCallback(async () => {
+		await voidSettingsService.rotateToNextApiKey(providerName)
+	}, [providerName, voidSettingsService])
+
+	const displayKeys = apiKeys.length > 0 ? apiKeys : (legacyApiKey ? [legacyApiKey] : [])
+
+	return (
+		<div className="space-y-2">
+			{/* Display existing keys */}
+			{displayKeys.map((key, index) => (
+				<div key={index} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+					<div className="flex-1 font-mono text-sm">
+						{key.substring(0, 8)}...{key.substring(key.length - 4)}
+						{index === currentKeyIndex && (
+							<span className="ml-2 px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs rounded">
+								Active
+							</span>
+						)}
+					</div>
+					{displayKeys.length > 1 && (
+						<button
+							onClick={() => handleRemoveKey(index)}
+							className="p-1 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900 rounded"
+							title="Remove this API key"
+						>
+							<X size={16} />
+						</button>
+					)}
+				</div>
+			))}
+
+			{/* Add new key section */}
+			{showAddInput ? (
+				<div className="flex items-center gap-2">
+					<VoidSimpleInputBox
+						value={newKeyInput}
+						onChangeValue={setNewKeyInput}
+						placeholder="Enter new API key"
+						passwordBlur={true}
+						compact={true}
+					/>
+					<button
+						onClick={handleAddKey}
+						disabled={!newKeyInput.trim()}
+						className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+						title="Add API key"
+					>
+						<Check size={16} />
+					</button>
+					<button
+						onClick={() => {
+							setShowAddInput(false)
+							setNewKeyInput('')
+						}}
+						className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+						title="Cancel"
+					>
+						<X size={16} />
+					</button>
+				</div>
+			) : (
+				<div className="flex items-center gap-2">
+					<button
+						onClick={() => setShowAddInput(true)}
+						className="flex items-center gap-1 px-3 py-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900 rounded border border-blue-300 dark:border-blue-700"
+						title="Add another API key"
+					>
+						<Plus size={16} />
+						Add API Key
+					</button>
+					{displayKeys.length > 1 && (
+						<button
+							onClick={handleRotateKey}
+							className="flex items-center gap-1 px-3 py-2 text-green-500 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900 rounded border border-green-300 dark:border-green-700"
+							title="Rotate to next API key"
+						>
+							<RefreshCw size={16} />
+							Rotate
+						</button>
+					)}
+				</div>
+			)}
+
+			{displayKeys.length > 1 && (
+				<div className="text-xs text-gray-500 dark:text-gray-400">
+					{displayKeys.length} API keys configured. Keys will rotate automatically when limits are reached.
+				</div>
+			)}
+		</div>
+	)
+}
+
 const ProviderSetting = ({ providerName, settingName, subTextMd }: { providerName: ProviderName, settingName: SettingName, subTextMd: React.ReactNode }) => {
 
 	const { title: settingTitle, placeholder, isPasswordField } = displayInfoOfSettingName(providerName, settingName)
@@ -617,6 +743,21 @@ const ProviderSetting = ({ providerName, settingName, subTextMd }: { providerNam
 	const accessor = useAccessor()
 	const voidSettingsService = accessor.get('IVoidSettingsService')
 	const settingsState = useSettingsState()
+
+	// Special handling for apiKey - show multiple keys manager
+	if (settingName === 'apiKey') {
+		return (
+			<ErrorBoundary>
+				<div className='my-1'>
+					<div className='mb-2 text-sm font-medium'>{settingTitle}</div>
+					<MultipleApiKeysManager providerName={providerName} />
+					{!subTextMd ? null : <div className='py-1 px-3 opacity-50 text-sm'>
+						{subTextMd}
+					</div>}
+				</div>
+			</ErrorBoundary>
+		)
+	}
 
 	const settingValue = settingsState.settingsOfProvider[providerName][settingName] as string // this should always be a string in this component
 	if (typeof settingValue !== 'string') {
@@ -1039,6 +1180,7 @@ export const Settings = () => {
 		{ tab: 'models', label: 'Models' },
 		{ tab: 'localProviders', label: 'Local Providers' },
 		{ tab: 'providers', label: 'Main Providers' },
+		{ tab: 'keyMonitoring', label: 'Key Monitoring' },
 		{ tab: 'featureOptions', label: 'Feature Options' },
 		{ tab: 'general', label: 'General' },
 		{ tab: 'mcp', label: 'MCP' },
@@ -1206,6 +1348,13 @@ export const Settings = () => {
 									<h3 className={`text-void-fg-3 mb-2`}>{`Void can access models from Anthropic, OpenAI, OpenRouter, and more.`}</h3>
 
 									<VoidProviderSettings providerNames={nonlocalProviderNames} />
+								</ErrorBoundary>
+							</div>
+
+							{/* Key Monitoring section */}
+							<div className={shouldShowTab('keyMonitoring') ? `` : 'hidden'}>
+								<ErrorBoundary>
+									<KeyMonitoringPanel />
 								</ErrorBoundary>
 							</div>
 

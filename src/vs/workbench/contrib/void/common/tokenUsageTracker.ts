@@ -43,7 +43,7 @@ export class TokenUsageTracker extends Disposable {
 	private readonly CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
 	private readonly DATA_RETENTION_DAYS = 30;
 	private readonly PROACTIVE_ROTATION_THRESHOLD = 0.8; // 80%
-	
+
 	private cleanupTimer: NodeJS.Timeout | undefined;
 
 	constructor(
@@ -70,8 +70,8 @@ export class TokenUsageTracker extends Disposable {
 		let hasChanges = false
 		let removedCount = 0
 
-		for (const [providerKey, providerData] of Object.entries(data)) {
-			for (const [keyIndex, keyData] of Object.entries(providerData)) {
+		for (const [_providerKey, providerData] of Object.entries(data)) {
+			for (const [_keyIndex, keyData] of Object.entries(providerData)) {
 				const originalLength = keyData.usage.length
 				const filteredUsage = keyData.usage.filter(entry => {
 					const entryAge = now - entry.timestamp
@@ -99,7 +99,7 @@ export class TokenUsageTracker extends Disposable {
 	private autoResetCounters(providerName: ProviderName, limits: ProviderLimits): void {
 		const data = this.loadUsageData()
 		const providerKey = providerName
-		
+
 		if (!data[providerKey] || !data[providerKey]['0']) return
 
 		const keyData = data[providerKey]['0']
@@ -178,15 +178,15 @@ export class TokenUsageTracker extends Disposable {
 				this.logService.debug('[TokenUsageTracker] Empty storage data, returning empty object')
 				return {}
 			}
-			
+
 			const parsed = JSON.parse(stored)
-			
+
 			// Validate parsed data structure
 			if (!parsed || typeof parsed !== 'object') {
 				this.logService.warn('[TokenUsageTracker] Invalid data structure in storage, resetting')
 				return {}
 			}
-			
+
 			if (Object.keys(parsed).length > 0) {
 				this.logService.debug(`[TokenUsageTracker] Loaded usage data for ${Object.keys(parsed).length} providers from storage`)
 			} else {
@@ -237,7 +237,7 @@ export class TokenUsageTracker extends Disposable {
 			this.logService.error('[TokenUsageTracker] Invalid provider name:', providerName);
 			return;
 		}
-		
+
 		if (typeof tokensUsed !== 'number' || tokensUsed < 0 || !isFinite(tokensUsed)) {
 			this.logService.error('[TokenUsageTracker] Invalid tokens used value:', tokensUsed);
 			return;
@@ -245,13 +245,13 @@ export class TokenUsageTracker extends Disposable {
 
 		const data = this.loadUsageData()
 		const providerKey = providerName
-		
+
 		this.logService.info(`[TokenUsageTracker] Recording ${tokensUsed} tokens for ${providerName}`)
-		
+
 		if (!data[providerKey]) {
 			data[providerKey] = {}
 		}
-		
+
 		if (!data[providerKey]['0']) {
 			data[providerKey]['0'] = {
 				usage: [],
@@ -283,7 +283,7 @@ export class TokenUsageTracker extends Disposable {
 			this.logService.error('[TokenUsageTracker] Invalid provider name:', providerName);
 			return false;
 		}
-		
+
 		if (!limits || typeof limits !== 'object') {
 			this.logService.debug(`[TokenUsageTracker] No limits provided for ${providerName}, rotation not needed`);
 			return false;
@@ -291,10 +291,10 @@ export class TokenUsageTracker extends Disposable {
 
 		// First, perform automatic reset if needed
 		this.autoResetCounters(providerName, limits)
-		
+
 		const data = this.loadUsageData()
 		const providerKey = providerName
-		
+
 		if (!data[providerKey] || !data[providerKey]['0']) {
 			this.logService.debug(`[TokenUsageTracker] No usage data found for ${providerName}, rotation not needed`)
 			return false
@@ -338,7 +338,7 @@ export class TokenUsageTracker extends Disposable {
 			this.logService.error('[TokenUsageTracker] Invalid provider name:', providerName);
 			return null;
 		}
-		
+
 		if (!limits || typeof limits !== 'object') {
 			this.logService.debug(`[TokenUsageTracker] No limits provided for ${providerName}, returning basic stats`);
 			limits = {}; // Use empty limits object
@@ -346,10 +346,10 @@ export class TokenUsageTracker extends Disposable {
 
 		// First, perform automatic reset if needed
 		this.autoResetCounters(providerName, limits)
-		
+
 		const data = this.loadUsageData()
 		const providerKey = providerName
-		
+
 		if (!data[providerKey] || !data[providerKey]['0']) {
 			this.logService.debug(`[TokenUsageTracker] No usage data found for ${providerName}`)
 			return null
@@ -388,9 +388,9 @@ export class TokenUsageTracker extends Disposable {
 
 		const data = this.loadUsageData()
 		const providerKey = providerName
-		
+
 		this.logService.info(`[TokenUsageTracker] Resetting usage data for ${providerName}`)
-		
+
 		if (data[providerKey] && data[providerKey]['0']) {
 			data[providerKey]['0'] = {
 				usage: [],
@@ -424,7 +424,7 @@ export class TokenUsageTracker extends Disposable {
 			this.logService.error('[TokenUsageTracker] Invalid text parameter for token estimation:', typeof text);
 			return 0;
 		}
-		
+
 		if (text.length === 0) {
 			return 0;
 		}
@@ -435,7 +435,7 @@ export class TokenUsageTracker extends Disposable {
 		return estimated;
 	}
 
-	dispose(): void {
+	override dispose(): void {
 		super.dispose();
 	}
 }

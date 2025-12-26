@@ -19,6 +19,8 @@ import { RawToolParamsObj } from '../common/sendLLMMessageTypes.js'
 import { MAX_CHILDREN_URIs_PAGE, MAX_FILE_CHARS_PAGE, MAX_TERMINAL_BG_COMMAND_TIME, MAX_TERMINAL_INACTIVE_TIME } from '../common/prompt/prompts.js'
 import { IVoidSettingsService } from '../common/voidSettingsService.js'
 import { generateUuid } from '../../../../base/common/uuid.js'
+import { IAIActionLogService } from './aiActionLogService.js'
+import { calculateImpact } from '../common/aiActionLogTypes.js'
 
 
 // tool use for AI
@@ -153,6 +155,7 @@ export class ToolsService implements IToolsService {
 		@IDirectoryStrService private readonly directoryStrService: IDirectoryStrService,
 		@IMarkerService private readonly markerService: IMarkerService,
 		@IVoidSettingsService private readonly voidSettingsService: IVoidSettingsService,
+		@IAIActionLogService private readonly aiActionLogService: IAIActionLogService,
 	) {
 		const queryBuilder = instantiationService.createInstance(QueryBuilder);
 
@@ -295,6 +298,7 @@ export class ToolsService implements IToolsService {
 
 		this.callTool = {
 			read_file: async ({ uri, startLine, endLine, pageNumber }) => {
+				const filePath = uri.fsPath;
 				await voidModelService.initializeModel(uri)
 				const { model } = await voidModelService.getModelSafe(uri)
 				if (model === null) { throw new Error(`No contents; File does not exist.`) }
@@ -316,6 +320,10 @@ export class ToolsService implements IToolsService {
 				const fileContents = contents.slice(fromIdx, toIdx + 1) // paginate
 				const hasNextPage = (contents.length - 1) - toIdx >= 1
 				const totalFileLen = contents.length
+
+				// Log read action
+				this.aiActionLogService.logAction('read', filePath, 'LLM leu arquivo', 'baixo', `Leitura de ${totalNumLines} linhas, página ${pageNumber}`);
+
 				return { result: { fileContents, totalFileLen, hasNextPage, totalNumLines } }
 			},
 
@@ -397,25 +405,39 @@ export class ToolsService implements IToolsService {
 			// ---
 
 			create_file_or_folder: async ({ uri, isFolder }) => {
-				if (isFolder)
+				const filePath = uri.fsPath;
+				const impact = calculateImpact('create', filePath, 0);
+
+				if (isFolder) {
 					await fileService.createFolder(uri)
-				else {
+					this.aiActionLogService.logAction('create', filePath, 'LLM criou pasta', impact, `Pasta criada: ${filePath}`);
+				} else {
 					await fileService.createFile(uri)
+					this.aiActionLogService.logAction('create', filePath, 'LLM criou arquivo', impact, `Arquivo criado: ${filePath}`);
 				}
 				return { result: {} }
 			},
 
 			delete_file_or_folder: async ({ uri, isRecursive }) => {
+				const filePath = uri.fsPath;
+				const impact = calculateImpact('delete', filePath, isRecursive ? 5 : 0);
+
+				this.aiActionLogService.logAction('delete', filePath, 'LLM deletou arquivo/pasta', impact, `Deletado ${isRecursive ? 'recursivamente' : ''}: ${filePath}`);
 				await fileService.del(uri, { recursive: isRecursive })
 				return { result: {} }
 			},
 
 			rewrite_file: async ({ uri, newContent }) => {
+				const filePath = uri.fsPath;
 				await voidModelService.initializeModel(uri)
 				if (this.commandBarService.getStreamState(uri) === 'streaming') {
 					throw new Error(`Another LLM is currently making changes to this file. Please stop streaming for now and ask the user to resume later.`)
 				}
 				await editCodeService.callBeforeApplyOrEdit(uri)
+
+				const impact = calculateImpact('update', filePath, 0);
+				this.aiActionLogService.logAction('update', filePath, 'LLM reescreveu arquivo', impact, `Arquivo reescrito com ${newContent.length} caracteres`);
+
 				editCodeService.instantlyRewriteFile({ uri, newContent })
 				// at end, get lint errors
 				const lintErrorsPromise = Promise.resolve().then(async () => {
@@ -427,11 +449,16 @@ export class ToolsService implements IToolsService {
 			},
 
 			edit_file: async ({ uri, searchReplaceBlocks }) => {
+				const filePath = uri.fsPath;
 				await voidModelService.initializeModel(uri)
 				if (this.commandBarService.getStreamState(uri) === 'streaming') {
 					throw new Error(`Another LLM is currently making changes to this file. Please stop streaming for now and ask the user to resume later.`)
 				}
 				await editCodeService.callBeforeApplyOrEdit(uri)
+
+				const impact = calculateImpact('update', filePath, 0);
+				this.aiActionLogService.logAction('update', filePath, 'LLM editou arquivo', impact, `Arquivo editado com search/replace blocks`);
+
 				editCodeService.instantlyApplySearchReplaceBlocks({ uri, searchReplaceBlocks })
 
 				// at end, get lint errors

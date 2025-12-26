@@ -14,7 +14,7 @@ import { ILogService } from '../../../../platform/log/common/log.js';
 import { IMetricsService } from './metricsService.js';
 import { defaultProviderSettings, getModelCapabilities, ModelOverrides } from './modelCapabilities.js';
 import { VOID_SETTINGS_STORAGE_KEY } from './storageKeys.js';
-import { defaultSettingsOfProvider, FeatureName, ProviderName, ModelSelectionOfFeature, SettingsOfProvider, SettingName, providerNames, ModelSelection, modelSelectionsEqual, featureNames, VoidStatefulModelInfo, GlobalSettings, GlobalSettingName, defaultGlobalSettings, ModelSelectionOptions, OptionsOfModelSelection, ChatMode, OverridesOfModel, defaultOverridesOfModel, MCPUserStateOfName as MCPUserStateOfName, MCPUserState, ProviderLimits } from './voidSettingsTypes.js';
+import { defaultSettingsOfProvider, FeatureName, ProviderName, ModelSelectionOfFeature, SettingsOfProvider, SettingName, providerNames, ModelSelection, modelSelectionsEqual, featureNames, VoidStatefulModelInfo, GlobalSettings, GlobalSettingName, defaultGlobalSettings, ModelSelectionOptions, OptionsOfModelSelection, ChatMode, OverridesOfModel, defaultOverridesOfModel, MCPUserStateOfName as MCPUserStateOfName, MCPUserState } from './voidSettingsTypes.js';
 import { TokenUsageTracker } from './tokenUsageTracker.js';
 
 
@@ -308,7 +308,7 @@ export class VoidSettingsService extends Disposable implements IVoidSettingsServ
 			}
 			// add disableSystemMessage feature
 			if (readS.globalSettings.disableSystemMessage === undefined) readS.globalSettings.disableSystemMessage = false;
-			
+
 			// add autoAcceptLLMChanges feature
 			if (readS.globalSettings.autoAcceptLLMChanges === undefined) readS.globalSettings.autoAcceptLLMChanges = false;
 		}
@@ -632,21 +632,26 @@ export class VoidSettingsService extends Disposable implements IVoidSettingsServ
 	addApiKey = async (providerName: ProviderName, apiKey: string) => {
 		const currentSettings = this.state.settingsOfProvider[providerName];
 		const currentKeys = currentSettings.apiKeys || [];
-		
+
 		// Avoid duplicate keys
 		if (currentKeys.includes(apiKey)) {
 			return;
 		}
 
 		const newKeys = [...currentKeys, apiKey];
-		
+
+		// Update apiKeys array
 		await this.setSettingOfProvider(providerName, 'apiKeys', newKeys);
-		
+
+		// ALWAYS update the legacy apiKey field - this is what _didFillInProviderSettings checks
+		await this.setSettingOfProvider(providerName, 'apiKey', apiKey);
+
 		// If this is the first key, set it as current
 		if (currentKeys.length === 0) {
 			await this.setSettingOfProvider(providerName, 'currentKeyIndex', 0);
 		}
 
+		this._logService.info(`[VoidSettingsService] Added API key for ${providerName}, total keys: ${newKeys.length}`);
 		this._metricsService.capture('Add API Key', { providerName, keyCount: newKeys.length });
 	}
 
@@ -674,6 +679,10 @@ export class VoidSettingsService extends Disposable implements IVoidSettingsServ
 
 		await this.setSettingOfProvider(providerName, 'currentKeyIndex', newCurrentIndex);
 
+		// Also update the legacy apiKey field for compatibility with _didFillInProviderSettings
+		const activeKey = newKeys[newCurrentIndex] || '';
+		await this.setSettingOfProvider(providerName, 'apiKey', activeKey);
+
 		this._metricsService.capture('Remove API Key', { providerName, keyCount: newKeys.length });
 	}
 
@@ -690,6 +699,12 @@ export class VoidSettingsService extends Disposable implements IVoidSettingsServ
 		const nextIndex = (currentKeyIndex + 1) % currentKeys.length;
 		this._logService.info(`[VoidSettingsService] Rotating API key for ${providerName} from index ${currentKeyIndex} to ${nextIndex}`);
 		await this.setSettingOfProvider(providerName, 'currentKeyIndex', nextIndex);
+
+		// Also update the legacy apiKey field for compatibility
+		const activeKey = currentKeys[nextIndex];
+		if (activeKey) {
+			await this.setSettingOfProvider(providerName, 'apiKey', activeKey);
+		}
 
 		this._metricsService.capture('Rotate API Key', { providerName, newIndex: nextIndex });
 	}
@@ -719,9 +734,9 @@ export class VoidSettingsService extends Disposable implements IVoidSettingsServ
 
 	shouldRotateProactively = async (providerName: ProviderName): Promise<boolean> => {
 		const providerLimits = this.state.settingsOfProvider[providerName].providerLimits
-		
+
 		if (!providerLimits) return false
-		
+
 		const shouldRotate = this._tokenUsageTracker.shouldRotateProactively(providerName, providerLimits)
 		if (shouldRotate) {
 			this._logService.info(`[VoidSettingsService] Proactive rotation recommended for ${providerName}`);
@@ -731,9 +746,9 @@ export class VoidSettingsService extends Disposable implements IVoidSettingsServ
 
 	getTokenUsageStats = async (providerName: ProviderName): Promise<any> => {
 		const providerLimits = this.state.settingsOfProvider[providerName].providerLimits
-		
+
 		if (!providerLimits) return null
-		
+
 		return this._tokenUsageTracker.getUsageStats(providerName, providerLimits)
 	}
 

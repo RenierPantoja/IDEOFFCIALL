@@ -191,7 +191,7 @@ ${telemetryText}
 
 ${restartString}
 
-Void separately records basic usage like the number of messages people are sending. If you'd like to disable Void metrics, you may do so in Void's Settings.
+RK IDE separately records basic usage like the number of messages people are sending. If you'd like to disable RK IDE metrics, you may do so in RK IDE Settings.
 `;
 
 	return telemetryDescription;

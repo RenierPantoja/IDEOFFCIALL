@@ -76,7 +76,7 @@ const newOpenAICompatibleSDK = async ({ settingsOfProvider, providerName, includ
 		dangerouslyAllowBrowser: true,
 		...includeInPayload,
 	}
-	
+
 	// Helper function to get API key with rotation support
 	const getApiKey = (providerConfig: any): string => {
 		if (voidSettingsService) {
@@ -88,7 +88,7 @@ const newOpenAICompatibleSDK = async ({ settingsOfProvider, providerName, includ
 		// Fallback to legacy apiKey
 		return providerConfig.apiKey || '';
 	};
-	
+
 	if (providerName === 'openAI') {
 		const thisConfig = settingsOfProvider[providerName]
 		return new OpenAI({ apiKey: getApiKey(thisConfig), ...commonPayloadOpts })
@@ -113,7 +113,7 @@ const newOpenAICompatibleSDK = async ({ settingsOfProvider, providerName, includ
 		const thisConfig = settingsOfProvider[providerName]
 		return new OpenAI({
 			baseURL: 'https://openrouter.ai/api/v1',
-				apiKey: getApiKey(thisConfig),
+			apiKey: getApiKey(thisConfig),
 			defaultHeaders: {
 				'HTTP-Referer': 'https://voideditor.com', // Optional, for including your app on openrouter.ai rankings.
 				'X-Title': 'Void', // Optional. Shows in rankings on openrouter.ai.
@@ -147,7 +147,7 @@ const newOpenAICompatibleSDK = async ({ settingsOfProvider, providerName, includ
 		  *   https://bedrock-runtime.<region>.amazonaws.com
 		  * is **NOT** OpenAI-compatible, so we do *not* fall back to it here.
 		  */
-		const { endpoint, apiKey } = settingsOfProvider.awsBedrock
+		const { endpoint } = settingsOfProvider.awsBedrock
 
 		// ① use the user-supplied proxy if present
 		// ② otherwise default to local LiteLLM
@@ -222,7 +222,7 @@ const _sendOpenAICompatibleFIM = async ({ messages: { prefix, suffix, stopTokens
 				try {
 					// Try to rotate to next API key
 					await voidSettingsService.rotateToNextApiKey(providerName);
-					
+
 					// Retry with new API key
 					const newOpenai = await newOpenAICompatibleSDK({ providerName, settingsOfProvider, includeInPayload: additionalOpenAIPayload, voidSettingsService })
 					const retryResponse = await newOpenai.completions.create({
@@ -443,32 +443,32 @@ const _sendOpenAICompatibleChat = async ({ messages, onText, onFinalMessage, onE
 				try {
 					// Try to rotate to next API key
 					await voidSettingsService.rotateToNextApiKey(providerName);
-					
+
 					// Retry with new API key
 					const newOpenai = await newOpenAICompatibleSDK({ providerName, settingsOfProvider, includeInPayload, voidSettingsService })
 					if (providerName === 'microsoftAzure') {
 						(newOpenai as AzureOpenAI).deploymentName = modelName;
 					}
-					
+
 					const retryResponse = await newOpenai.chat.completions.create(options);
 					_setAborter(() => retryResponse.controller.abort())
-					
+
 					let retryFullReasoningSoFar = ''
 					let retryFullTextSoFar = ''
 					let retryToolName = ''
 					let retryToolId = ''
 					let retryToolParamsStr = ''
-					
+
 					for await (const chunk of retryResponse) {
 						const newText = chunk.choices[0]?.delta?.content ?? ''
 						retryFullTextSoFar += newText
-						
+
 						// Handle reasoning if present
 						if (nameOfReasoningFieldInDelta) {
 							const newReasoning = (chunk.choices[0]?.delta as any)?.[nameOfReasoningFieldInDelta] ?? ''
 							retryFullReasoningSoFar += newReasoning
 						}
-						
+
 						// Handle tool calls
 						const toolCalls = chunk.choices[0]?.delta?.tool_calls
 						if (toolCalls && toolCalls.length > 0) {
@@ -477,14 +477,14 @@ const _sendOpenAICompatibleChat = async ({ messages, onText, onFinalMessage, onE
 							if (toolCall.id) retryToolId = toolCall.id
 							if (toolCall.function?.arguments) retryToolParamsStr += toolCall.function.arguments
 						}
-						
+
 						onText({
 							fullText: retryFullTextSoFar,
 							fullReasoning: retryFullReasoningSoFar,
 							toolCall: !retryToolName ? undefined : { name: retryToolName, rawParams: {}, isDone: false, doneParams: [], id: retryToolId },
 						})
 					}
-					
+
 					if (!retryFullTextSoFar && !retryFullReasoningSoFar && !retryToolName) {
 						onError({ message: 'Void: Response from model was empty.', fullError: null })
 					} else {
@@ -493,16 +493,16 @@ const _sendOpenAICompatibleChat = async ({ messages, onText, onFinalMessage, onE
 						onFinalMessage({ fullText: retryFullTextSoFar, fullReasoning: retryFullReasoningSoFar, anthropicReasoning: null, ...toolCallObj });
 					}
 				} catch (retryError) {
-					if (retryError instanceof OpenAI.APIError && retryError.status === 401) { 
-						onError({ message: invalidApiKeyMessage(providerName), fullError: retryError }); 
-					} else { 
-						onError({ message: retryError + '', fullError: retryError }); 
+					if (retryError instanceof OpenAI.APIError && retryError.status === 401) {
+						onError({ message: invalidApiKeyMessage(providerName), fullError: retryError });
+					} else {
+						onError({ message: retryError + '', fullError: retryError });
 					}
 				}
-			} else if (error instanceof OpenAI.APIError && error.status === 401) { 
-				onError({ message: invalidApiKeyMessage(providerName), fullError: error }); 
-			} else { 
-				onError({ message: error + '', fullError: error }); 
+			} else if (error instanceof OpenAI.APIError && error.status === 401) {
+				onError({ message: invalidApiKeyMessage(providerName), fullError: error });
+			} else {
+				onError({ message: error + '', fullError: error });
 			}
 		})
 }
@@ -707,7 +707,7 @@ const sendAnthropicChat = async ({ messages, providerName, onText, onFinalMessag
 			const inputTokens = response.usage.input_tokens || 0
 			const outputTokens = response.usage.output_tokens || 0
 			const totalTokens = inputTokens + outputTokens
-			
+
 			voidSettingsService.recordTokenUsage(providerName, totalTokens)
 		}
 

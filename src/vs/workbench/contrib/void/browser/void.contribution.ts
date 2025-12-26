@@ -83,3 +83,33 @@ import '../common/voidUpdateService.js'
 
 // model service
 import '../common/voidModelService.js'
+
+// AI Action Log Service (RK IDE autonomous AI system)
+import './aiActionLogService.js'
+
+// Autonomous File Service (RK IDE autonomous AI system)
+import './autonomousFileService.js'
+
+// Realtime Communication Service (RK IDE autonomous AI system)
+import './realtimeCommService.js'
+
+// Async Task Queue Service (RK IDE autonomous AI system)
+import './asyncTaskQueueService.js'
+
+// Model Switch Service (RK IDE autonomous AI system)
+import './modelSwitchService.js'
+
+// Error Handling Service (RK IDE autonomous AI system)
+import './errorHandlingService.js'
+
+// API Service (RK IDE autonomous AI system - external communication)
+import './apiService.js'
+
+// API Server Service proxy (RK IDE autonomous AI system - electron-main communication)
+import '../common/apiServerService.js'
+
+// Firebase Sync Service (RK IDE - comunicação com sites externos via Firebase)
+import './firebaseSyncService.js'
+
+// Firebase Auth Service (RK IDE - autenticação Firebase)
+import './firebaseAuthService.js'

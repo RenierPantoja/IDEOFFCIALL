@@ -54,6 +54,15 @@ import { IExtensionManagementService } from '../../../../../../../platform/exten
 import { IMCPService } from '../../../../common/mcpService.js';
 import { IStorageService, StorageScope } from '../../../../../../../platform/storage/common/storage.js'
 import { OPT_OUT_KEY } from '../../../../common/storageKeys.js'
+import { IAIActionLogService } from '../../../aiActionLogService.js';
+import { IAsyncTaskQueueService } from '../../../asyncTaskQueueService.js';
+import { AIActionLog, AIActionLogState } from '../../../../common/aiActionLogTypes.js';
+import { IAutonomousFileService } from '../../../autonomousFileService.js';
+import { IApiService } from '../../../apiService.js';
+import { IApiServerService } from '../../../../common/apiServerService.js';
+import { IFirebaseSyncService } from '../../../firebaseSyncService.js';
+import { IFirebaseAuthService } from '../../../firebaseAuthService.js';
+import { FirebaseAuthState } from '../../../../common/firebaseSyncTypes.js';
 
 
 // normally to do this you'd use a useEffect that calls .onDidChangeState(), but useEffect mounts too late and misses initial state changes
@@ -83,6 +92,15 @@ const activeURIListeners: Set<(uri: URI | null) => void> = new Set();
 
 const mcpListeners: Set<() => void> = new Set()
 
+// AI Action Log State (RK IDE autonomous AI system)
+let aiActionLogState: AIActionLogState
+const aiActionLogStateListeners: Set<(s: AIActionLogState) => void> = new Set()
+const aiActionLogListeners: Set<(log: AIActionLog) => void> = new Set()
+
+// Firebase Auth State
+let firebaseAuthState: FirebaseAuthState
+const firebaseAuthStateListeners: Set<(s: FirebaseAuthState) => void> = new Set()
+
 
 // must call this before you can use any of the hooks below
 // this should only be called ONCE! this is the only place you don't need to dispose onDidChange. If you use state.onDidChange anywhere else, make sure to dispose it!
@@ -101,9 +119,11 @@ export const _registerServices = (accessor: ServicesAccessor) => {
 		voidCommandBarService: accessor.get(IVoidCommandBarService),
 		modelService: accessor.get(IModelService),
 		mcpService: accessor.get(IMCPService),
+		aiActionLogService: accessor.get(IAIActionLogService),
+		firebaseAuthService: accessor.get(IFirebaseAuthService),
 	}
 
-	const { settingsStateService, chatThreadsStateService, refreshModelService, themeService, editCodeService, voidCommandBarService, modelService, mcpService } = stateServices
+	const { settingsStateService, chatThreadsStateService, refreshModelService, themeService, editCodeService, voidCommandBarService, modelService, mcpService, aiActionLogService, firebaseAuthService } = stateServices
 
 
 
@@ -176,6 +196,28 @@ export const _registerServices = (accessor: ServicesAccessor) => {
 		})
 	)
 
+	// AI Action Log Service listeners (RK IDE autonomous AI system)
+	aiActionLogState = aiActionLogService.state
+	disposables.push(
+		aiActionLogService.onDidChangeState((state) => {
+			aiActionLogState = state
+			aiActionLogStateListeners.forEach(l => l(aiActionLogState))
+		})
+	)
+	disposables.push(
+		aiActionLogService.onDidLogAction((log) => {
+			aiActionLogListeners.forEach(l => l(log))
+		})
+	)
+
+	// Firebase Auth Service listeners
+	firebaseAuthState = firebaseAuthService.state
+	disposables.push(
+		firebaseAuthService.onDidChangeAuthState((state) => {
+			firebaseAuthState = state
+			firebaseAuthStateListeners.forEach(l => l(firebaseAuthState))
+		})
+	)
 
 	return disposables
 }
@@ -227,6 +269,13 @@ const getReactAccessor = (accessor: ServicesAccessor) => {
 		IExtensionManagementService: accessor.get(IExtensionManagementService),
 		IExtensionTransferService: accessor.get(IExtensionTransferService),
 		IMCPService: accessor.get(IMCPService),
+		IAIActionLogService: accessor.get(IAIActionLogService),
+		IAutonomousFileService: accessor.get(IAutonomousFileService),
+		IAsyncTaskQueueService: accessor.get(IAsyncTaskQueueService),
+		IApiService: accessor.get(IApiService),
+		IApiServerService: accessor.get(IApiServerService),
+		IFirebaseSyncService: accessor.get(IFirebaseSyncService),
+		IFirebaseAuthService: accessor.get(IFirebaseAuthService),
 
 		IStorageService: accessor.get(IStorageService),
 
@@ -425,4 +474,216 @@ export const useIsOptedOut = () => {
 	}, [storageService, getVal])
 
 	return s
+}
+
+// =============================================
+// AI Action Log Hooks (RK IDE autonomous AI system)
+// =============================================
+
+/**
+ * Hook para obter o estado atual dos logs de ações da IA
+ */
+export const useAIActionLogState = () => {
+	const [s, ss] = useState(aiActionLogState)
+	useEffect(() => {
+		ss(aiActionLogState)
+		aiActionLogStateListeners.add(ss)
+		return () => { aiActionLogStateListeners.delete(ss) }
+	}, [ss])
+	return s
+}
+
+/**
+ * Hook para receber notificações de novas ações da IA em tempo real
+ */
+export const useAIActionLogListener = (listener: (log: AIActionLog) => void) => {
+	useEffect(() => {
+		aiActionLogListeners.add(listener)
+		return () => { aiActionLogListeners.delete(listener) }
+	}, [listener])
+}
+
+/**
+ * Hook para obter logs recentes da IA
+ */
+export const useRecentAILogs = (count: number = 50) => {
+	const accessor = useAccessor()
+	const aiActionLogService = accessor.get('IAIActionLogService')
+	const [logs, setLogs] = useState(aiActionLogService.getRecentLogs(count))
+
+	useAIActionLogListener(useCallback(() => {
+		setLogs(aiActionLogService.getRecentLogs(count))
+	}, [aiActionLogService, count]))
+
+	return logs
+}
+
+/**
+ * Hook para obter logs de um arquivo específico
+ */
+export const useAILogsByFile = (filePath: string) => {
+	const accessor = useAccessor()
+	const aiActionLogService = accessor.get('IAIActionLogService')
+	const [logs, setLogs] = useState(aiActionLogService.getLogsByFile(filePath))
+
+	useAIActionLogListener(useCallback((log: AIActionLog) => {
+		if (log.file.includes(filePath)) {
+			setLogs(aiActionLogService.getLogsByFile(filePath))
+		}
+	}, [aiActionLogService, filePath]))
+
+	return logs
+}
+
+/**
+ * Hook para gerenciar tarefas assíncronas
+ */
+export const useAsyncTasks = () => {
+	const accessor = useAccessor()
+	const service = accessor.get('IAsyncTaskQueueService')
+	const [tasks, setTasks] = useState(service.getTasks())
+	const [pendingCount, setPendingCount] = useState(service.getPendingTasks().length)
+
+	useEffect(() => {
+		const update = () => {
+			setTasks(service.getTasks())
+			setPendingCount(service.getPendingTasks().length)
+		}
+
+		const d1 = service.onDidAddTask(update)
+		const d2 = service.onDidUpdateTask(update)
+
+		return () => {
+			d1.dispose()
+			d2.dispose()
+		}
+	}, [service])
+
+	return {
+		tasks,
+		pendingCount,
+		queueTask: service.queueTask.bind(service),
+		cancelTask: service.cancelTask.bind(service)
+	}
+}
+
+
+// =============================================
+// Firebase Sync Hooks (RK IDE - comunicação externa)
+// =============================================
+
+/**
+ * Hook para obter o estado da sincronização Firebase
+ */
+export const useFirebaseSyncState = () => {
+	const accessor = useAccessor()
+	const firebaseSyncService = accessor.get('IFirebaseSyncService')
+	const [state, setState] = useState(firebaseSyncService.state)
+
+	useEffect(() => {
+		setState(firebaseSyncService.state)
+		const disposable = firebaseSyncService.onDidChangeState((newState) => {
+			setState(newState)
+		})
+		return () => disposable.dispose()
+	}, [firebaseSyncService])
+
+	return state
+}
+
+/**
+ * Hook para gerenciar a conexão Firebase
+ */
+export const useFirebaseSync = () => {
+	const accessor = useAccessor()
+	const firebaseSyncService = accessor.get('IFirebaseSyncService')
+	const state = useFirebaseSyncState()
+
+	const initialize = useCallback(async (config: {
+		apiKey: string;
+		authDomain: string;
+		projectId: string;
+		storageBucket: string;
+		messagingSenderId: string;
+		appId: string;
+	}) => {
+		await firebaseSyncService.initialize(config)
+	}, [firebaseSyncService])
+
+	const disconnect = useCallback(async () => {
+		await firebaseSyncService.disconnect()
+	}, [firebaseSyncService])
+
+	const syncNow = useCallback(async () => {
+		await firebaseSyncService.updateStatus()
+		await firebaseSyncService.syncLogs()
+		await firebaseSyncService.syncChat()
+	}, [firebaseSyncService])
+
+	return {
+		state,
+		userId: firebaseSyncService.getUserId(),
+		initialize,
+		disconnect,
+		syncNow
+	}
+}
+
+// =============================================
+// Firebase Auth Hooks (RK IDE - autenticação)
+// =============================================
+
+/**
+ * Hook para obter o estado de autenticação Firebase
+ */
+export const useFirebaseAuthState = () => {
+	const [s, ss] = useState(firebaseAuthState)
+	useEffect(() => {
+		ss(firebaseAuthState)
+		firebaseAuthStateListeners.add(ss)
+		return () => { firebaseAuthStateListeners.delete(ss) }
+	}, [ss])
+	return s
+}
+
+/**
+ * Hook para gerenciar autenticação Firebase
+ */
+export const useFirebaseAuth = () => {
+	const accessor = useAccessor()
+	const firebaseAuthService = accessor.get('IFirebaseAuthService')
+	const state = useFirebaseAuthState()
+
+	const signInWithGoogle = useCallback(async () => {
+		return await firebaseAuthService.signInWithGoogle()
+	}, [firebaseAuthService])
+
+	const signInWithEmail = useCallback(async (email: string, password: string) => {
+		return await firebaseAuthService.signInWithEmail(email, password)
+	}, [firebaseAuthService])
+
+	const createAccount = useCallback(async (email: string, password: string, displayName?: string) => {
+		return await firebaseAuthService.createAccount(email, password, displayName)
+	}, [firebaseAuthService])
+
+	const sendPasswordResetEmail = useCallback(async (email: string) => {
+		return await firebaseAuthService.sendPasswordResetEmail(email)
+	}, [firebaseAuthService])
+
+	const signOut = useCallback(async () => {
+		return await firebaseAuthService.signOut()
+	}, [firebaseAuthService])
+
+	return {
+		state,
+		user: state?.user || null,
+		isAuthenticated: state?.isAuthenticated || false,
+		loading: state?.loading || false,
+		error: state?.error || null,
+		signInWithGoogle,
+		signInWithEmail,
+		createAccount,
+		sendPasswordResetEmail,
+		signOut
+	}
 }

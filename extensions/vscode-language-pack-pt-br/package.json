@@ -1,0 +1,29 @@
+{
+	"name": "vscode-language-pack-pt-br",
+	"displayName": "Portuguese (Brazil) Language Pack for RK IDE",
+	"description": "Language pack extension for Portuguese (Brazil)",
+	"version": "1.0.0",
+	"publisher": "RK-IDE",
+	"license": "MIT",
+	"engines": {
+		"vscode": "*"
+	},
+	"categories": [
+		"Language Packs"
+	],
+	"contributes": {
+		"localizations": [
+			{
+				"languageId": "pt-br",
+				"languageName": "Portuguese (Brazil)",
+				"localizedLanguageName": "Português (Brasil)",
+				"translations": [
+					{
+						"id": "vscode",
+						"path": "./translations/main.i18n.json"
+					}
+				]
+			}
+		]
+	}
+}

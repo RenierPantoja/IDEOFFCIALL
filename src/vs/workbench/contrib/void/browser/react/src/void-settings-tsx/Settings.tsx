@@ -616,10 +616,10 @@ const MultipleApiKeysManager = ({ providerName }: { providerName: ProviderName }
 	const accessor = useAccessor()
 	const voidSettingsService = accessor.get('IVoidSettingsService')
 	const settingsState = useSettingsState()
-	
+
 	const [newKeyInput, setNewKeyInput] = useState('')
 	const [showAddInput, setShowAddInput] = useState(false)
-	
+
 	const currentSettings = settingsState.settingsOfProvider[providerName]
 	const apiKeys = currentSettings.apiKeys || []
 	const currentKeyIndex = currentSettings.currentKeyIndex || 0
@@ -1303,7 +1303,7 @@ export const Settings = () => {
 
 					<div className='max-w-3xl'>
 
-						<h1 className='text-2xl w-full'>{`Void's Settings`}</h1>
+						<h1 className='text-2xl w-full'>{`RK IDE Settings`}</h1>
 
 						<div className='w-full h-[1px] my-2' />
 
@@ -1558,7 +1558,7 @@ export const Settings = () => {
 								{/* Import/Export section */}
 								<div>
 									<h2 className='text-3xl mb-2'>Import/Export</h2>
-									<h4 className='text-void-fg-3 mb-4'>{`Transfer Void's settings and chats in and out of Void.`}</h4>
+									<h4 className='text-void-fg-3 mb-4'>{`Transfer RK IDE settings and chats in and out of RK IDE.`}</h4>
 									<div className='flex flex-col gap-8'>
 										{/* Settings Subcategory */}
 										<div className='flex flex-col gap-2 max-w-48 w-full'>

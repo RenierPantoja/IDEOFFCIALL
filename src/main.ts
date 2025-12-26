@@ -676,13 +676,13 @@ async function resolveNlsConfiguration(): Promise<INLSConfiguration> {
 	let userLocale = app.getLocale();
 	if (!userLocale) {
 		return {
-			userLocale: 'en',
+			userLocale: 'pt-br',
 			osLocale,
-			resolvedLanguage: 'en',
+			resolvedLanguage: 'pt-br',
 			defaultMessagesFile: path.join(__dirname, 'nls.messages.json'),
 
 			// NLS: below 2 are a relic from old times only used by vscode-nls and deprecated
-			locale: 'en',
+			locale: 'pt-br',
 			availableLanguages: {}
 		};
 	}

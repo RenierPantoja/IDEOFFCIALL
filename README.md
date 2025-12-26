@@ -1,40 +1,26 @@
-# Welcome to Void.
+# Bem-vindo ao RK IDE.
 
 <div align="center">
 	<img
 		src="./src/vs/workbench/browser/parts/editor/media/slice_of_void.png"
-	 	alt="Void Welcome"
+	 	alt="RK IDE Welcome"
 		width="300"
 	 	height="300"
 	/>
 </div>
 
-Void is the open-source Cursor alternative.
+**RK IDE - Direitos reservados de Kaynan e Renier.**
 
-Use AI agents on your codebase, checkpoint and visualize changes, and bring any model or host locally. Void sends messages directly to providers without retaining your data.
+RK IDE é uma alternativa open-source ao Cursor.
 
-This repo contains the full sourcecode for Void. If you're new, welcome!
+Use agentes de IA em sua base de código, visualize e salve checkpoints de alterações, e use qualquer modelo ou hospede localmente. O RK IDE envia mensagens diretamente aos provedores sem reter seus dados.
 
-- 🧭 [Website](https://voideditor.com)
+Este repositório contém o código-fonte completo do RK IDE. Se você é novo, seja bem-vindo!
 
-- 👋 [Discord](https://discord.gg/RSNjgaugJs)
+## Referência
 
-- 🚙 [Project Board](https://github.com/orgs/voideditor/projects/2)
+RK IDE é um fork do repositório [vscode](https://github.com/microsoft/vscode). Para um guia da base de código, consulte [VOID_CODEBASE_GUIDE](./VOID_CODEBASE_GUIDE.md).
 
+## Licença
 
-## Contributing
-
-1. To get started working on Void, check out our Project Board! You can also see [HOW_TO_CONTRIBUTE](https://github.com/voideditor/void/blob/main/HOW_TO_CONTRIBUTE.md).
-
-2. Feel free to attend a casual weekly meeting in our Discord channel!
-
-
-## Reference
-
-Void is a fork of the [vscode](https://github.com/microsoft/vscode) repository. For a guide to the codebase, see [VOID_CODEBASE_GUIDE](https://github.com/voideditor/void/blob/main/VOID_CODEBASE_GUIDE.md).
-
-## Note
-Work is temporarily paused on the Void IDE (this repo) while we experiment with a few novel AI coding ideas for Void. Stay alerted with new releases in our Discord channel.
-
-## Support
-You can always reach us in our Discord server or contact us via email: hello@voideditor.com.
+Este projeto é baseado no [Void IDE](https://github.com/voideditor/void) e está licenciado sob a licença MIT.

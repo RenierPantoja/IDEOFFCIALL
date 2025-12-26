@@ -80,7 +80,7 @@ export const sendLLMMessage = async ({
 
 		// handle failed to fetch errors, which give 0 information by design
 		if (errorMessage === 'TypeError: fetch failed')
-			errorMessage = `Failed to fetch from ${displayInfoOfProviderName(providerName).title}. This likely means you specified the wrong endpoint in Void's Settings, or your local model provider like Ollama is powered off.`
+			errorMessage = `Failed to fetch from ${displayInfoOfProviderName(providerName).title}. This likely means you specified the wrong endpoint in RK IDE Settings, or your local model provider like Ollama is powered off.`
 
 		captureLLMEvent(`${loggingName} - Error`, { error: errorMessage })
 		onError_({ message: errorMessage, fullError })

@@ -49,7 +49,7 @@ export class LLMMessageChannel implements IServerChannel {
 	// stupidly, channels can't take in @IService
 	constructor(
 		private readonly metricsService: IMetricsService,
-		private readonly voidSettingsService: IVoidSettingsService,
+		private readonly voidSettingsService: IVoidSettingsService | undefined,
 	) { }
 
 	// browser uses this to listen for changes

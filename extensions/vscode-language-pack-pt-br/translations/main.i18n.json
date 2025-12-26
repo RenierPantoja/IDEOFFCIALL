@@ -1,0 +1,670 @@
+{
+	"version": "1.0.0",
+	"contents": {
+		"vs/base/common/actions": {
+			"submenu.empty": "(vazio)"
+		},
+		"vs/base/browser/ui/actionbar/actionViewItems": {
+			"titleLabel": "{0} ({1})"
+		},
+		"vs/base/browser/ui/findinput/findInput": {
+			"defaultLabel": "entrada"
+		},
+		"vs/base/browser/ui/findinput/findInputToggles": {
+			"caseDescription": "Diferenciar Maiúsculas de Minúsculas",
+			"wordsDescription": "Coincidir Palavra Inteira",
+			"regexDescription": "Usar Expressão Regular"
+		},
+		"vs/base/browser/ui/inputbox/inputBox": {
+			"alertErrorMessage": "Erro: {0}",
+			"alertWarningMessage": "Aviso: {0}",
+			"alertInfoMessage": "Informação: {0}"
+		},
+		"vs/base/browser/ui/toolbar/toolbar": {
+			"moreActions": "Mais Ações..."
+		},
+		"vs/platform/actions/common/actions": {
+			"miFile": "&&Arquivo",
+			"miEdit": "&&Editar",
+			"miSelection": "&&Seleção",
+			"miView": "&&Visualizar",
+			"miGo": "&&Ir",
+			"miRun": "E&&xecutar",
+			"miTerminal": "&&Terminal",
+			"miHelp": "A&&juda"
+		},
+		"vs/platform/dialogs/common/dialogs": {
+			"ok": "OK",
+			"cancel": "Cancelar",
+			"yes": "Sim",
+			"no": "Não",
+			"save": "Salvar",
+			"dontSave": "Não Salvar",
+			"close": "Fechar",
+			"open": "Abrir",
+			"delete": "Excluir",
+			"copy": "Copiar",
+			"paste": "Colar",
+			"cut": "Recortar"
+		},
+		"vs/platform/markers/common/markers": {
+			"sev.error": "Erro",
+			"sev.warning": "Aviso",
+			"sev.info": "Informação"
+		},
+		"vs/workbench/common/actions": {
+			"view": "Visualizar",
+			"file": "Arquivo",
+			"edit": "Editar",
+			"selection": "Seleção",
+			"go": "Ir",
+			"run": "Executar",
+			"terminal": "Terminal",
+			"help": "Ajuda",
+			"preferences": "Preferências",
+			"developer": "Desenvolvedor"
+		},
+		"vs/workbench/browser/parts/activitybar/activitybarPart": {
+			"activityBarPosition": "Posição da Barra de Atividades",
+			"accounts": "Contas",
+			"manage": "Gerenciar",
+			"globalActivity": "Atividade Global"
+		},
+		"vs/workbench/browser/parts/editor/editorPart": {
+			"groupTitle": "Grupo {0}",
+			"noOpenEditors": "Nenhum editor aberto"
+		},
+		"vs/workbench/browser/parts/panel/panelPart": {
+			"hidePanel": "Ocultar Painel",
+			"panel": "Painel"
+		},
+		"vs/workbench/browser/parts/sidebar/sidebarPart": {
+			"focusSideBar": "Focar na Barra Lateral",
+			"sideBar": "Barra Lateral"
+		},
+		"vs/workbench/browser/parts/statusbar/statusbarPart": {
+			"status.editor.selection": "Ln {0}, Col {1}",
+			"status.editor.selection.range": "Ln {0}, Col {1} ({2} selecionados)",
+			"status.editor.selection.lines": "{0} linhas selecionadas",
+			"status.editor.eol.LF": "LF",
+			"status.editor.eol.CRLF": "CRLF",
+			"status.editor.indentation": "Espaços: {0}",
+			"status.editor.encoding": "{0}",
+			"status.editor.mode": "{0}",
+			"status.problems": "Problemas"
+		},
+		"vs/workbench/browser/parts/titlebar/titlebarPart": {
+			"titleBarStyle": "Estilo da Barra de Título"
+		},
+		"vs/workbench/contrib/files/browser/fileActions": {
+			"newFile": "Novo Arquivo",
+			"newFolder": "Nova Pasta",
+			"openFile": "Abrir Arquivo",
+			"openFolder": "Abrir Pasta",
+			"openWorkspace": "Abrir Área de Trabalho",
+			"saveFile": "Salvar",
+			"saveFileAs": "Salvar Como...",
+			"saveAll": "Salvar Tudo",
+			"closeEditor": "Fechar Editor",
+			"closeAllEditors": "Fechar Todos os Editores",
+			"closeOtherEditors": "Fechar Outros Editores",
+			"revertFile": "Reverter Arquivo",
+			"deleteFile": "Excluir",
+			"renameFile": "Renomear",
+			"copyFile": "Copiar",
+			"pasteFile": "Colar",
+			"copyPath": "Copiar Caminho",
+			"copyRelativePath": "Copiar Caminho Relativo",
+			"revealInExplorer": "Revelar no Explorador",
+			"revealInOS": "Revelar no Explorador de Arquivos",
+			"compareWithSaved": "Comparar com Salvo",
+			"compareWithClipboard": "Comparar com Área de Transferência"
+		},
+		"vs/workbench/contrib/files/browser/views/explorerView": {
+			"explorerSection": "Explorador",
+			"open": "Abrir",
+			"openToSide": "Abrir ao Lado",
+			"openWith": "Abrir Com...",
+			"refresh": "Atualizar",
+			"collapse": "Recolher Tudo",
+			"newFile": "Novo Arquivo...",
+			"newFolder": "Nova Pasta..."
+		},
+		"vs/workbench/contrib/search/browser/searchActions": {
+			"findInFiles": "Localizar nos Arquivos",
+			"replaceInFiles": "Substituir nos Arquivos",
+			"search": "Pesquisar",
+			"searchResults": "Resultados da Pesquisa",
+			"clearSearchResults": "Limpar Resultados da Pesquisa",
+			"refreshSearch": "Atualizar Pesquisa",
+			"collapseAll": "Recolher Tudo",
+			"expandAll": "Expandir Tudo"
+		},
+		"vs/workbench/contrib/terminal/browser/terminalActions": {
+			"newTerminal": "Novo Terminal",
+			"killTerminal": "Encerrar Terminal",
+			"clearTerminal": "Limpar Terminal",
+			"splitTerminal": "Dividir Terminal",
+			"renameTerminal": "Renomear Terminal",
+			"selectAll": "Selecionar Tudo",
+			"copy": "Copiar",
+			"paste": "Colar",
+			"scrollUp": "Rolar para Cima",
+			"scrollDown": "Rolar para Baixo",
+			"scrollToTop": "Rolar para o Topo",
+			"scrollToBottom": "Rolar para o Final"
+		},
+		"vs/workbench/contrib/extensions/browser/extensionsActions": {
+			"installExtension": "Instalar Extensão",
+			"uninstallExtension": "Desinstalar Extensão",
+			"enableExtension": "Habilitar Extensão",
+			"disableExtension": "Desabilitar Extensão",
+			"updateExtension": "Atualizar Extensão",
+			"showExtension": "Mostrar Extensão",
+			"extensionSettings": "Configurações da Extensão",
+			"reloadRequired": "Recarregar Necessário",
+			"installing": "Instalando...",
+			"uninstalling": "Desinstalando...",
+			"installed": "Instalado",
+			"notInstalled": "Não Instalado"
+		},
+		"vs/workbench/contrib/extensions/browser/extensionsViewlet": {
+			"extensions": "Extensões",
+			"searchExtensions": "Pesquisar Extensões no Marketplace",
+			"installed": "Instaladas",
+			"popular": "Populares",
+			"recommended": "Recomendadas",
+			"enabled": "Habilitadas",
+			"disabled": "Desabilitadas",
+			"outdated": "Desatualizadas",
+			"builtin": "Integradas"
+		},
+		"vs/workbench/contrib/preferences/browser/preferencesActions": {
+			"openSettings": "Abrir Configurações",
+			"openSettingsJson": "Abrir Configurações (JSON)",
+			"openKeyboardShortcuts": "Abrir Atalhos de Teclado",
+			"openKeyboardShortcutsJson": "Abrir Atalhos de Teclado (JSON)",
+			"configureLanguage": "Configurar Idioma de Exibição",
+			"openUserSettings": "Abrir Configurações do Usuário",
+			"openWorkspaceSettings": "Abrir Configurações da Área de Trabalho",
+			"openFolderSettings": "Abrir Configurações da Pasta"
+		},
+		"vs/workbench/contrib/debug/browser/debugActions": {
+			"startDebugging": "Iniciar Depuração",
+			"startWithoutDebugging": "Executar Sem Depuração",
+			"stopDebugging": "Parar Depuração",
+			"restartDebugging": "Reiniciar Depuração",
+			"continueDebugging": "Continuar",
+			"pauseDebugging": "Pausar",
+			"stepOver": "Passar por Cima",
+			"stepInto": "Entrar",
+			"stepOut": "Sair",
+			"toggleBreakpoint": "Alternar Ponto de Interrupção",
+			"addBreakpoint": "Adicionar Ponto de Interrupção",
+			"removeBreakpoint": "Remover Ponto de Interrupção",
+			"enableBreakpoint": "Habilitar Ponto de Interrupção",
+			"disableBreakpoint": "Desabilitar Ponto de Interrupção"
+		},
+		"vs/workbench/contrib/debug/browser/debugViewlet": {
+			"debug": "Depurar",
+			"runAndDebug": "Executar e Depurar",
+			"variables": "Variáveis",
+			"watch": "Inspeção",
+			"callStack": "Pilha de Chamadas",
+			"breakpoints": "Pontos de Interrupção",
+			"noDebugger": "Nenhum depurador configurado"
+		},
+		"vs/workbench/contrib/scm/browser/scmViewlet": {
+			"sourceControl": "Controle de Código-Fonte",
+			"changes": "Alterações",
+			"stagedChanges": "Alterações Preparadas",
+			"mergeChanges": "Alterações de Mesclagem",
+			"noChanges": "Nenhuma alteração",
+			"commit": "Confirmar",
+			"commitStaged": "Confirmar Preparadas",
+			"commitAll": "Confirmar Tudo",
+			"stage": "Preparar",
+			"stageAll": "Preparar Tudo",
+			"unstage": "Desfazer Preparação",
+			"unstageAll": "Desfazer Preparação de Tudo",
+			"discard": "Descartar",
+			"discardAll": "Descartar Tudo",
+			"push": "Enviar",
+			"pull": "Puxar",
+			"sync": "Sincronizar",
+			"fetch": "Buscar",
+			"branch": "Ramificação",
+			"checkout": "Fazer Checkout",
+			"merge": "Mesclar",
+			"rebase": "Rebasear",
+			"stash": "Guardar",
+			"stashPop": "Aplicar Guardado"
+		},
+		"vs/workbench/contrib/output/browser/outputActions": {
+			"output": "Saída",
+			"clearOutput": "Limpar Saída",
+			"showOutput": "Mostrar Saída",
+			"toggleOutput": "Alternar Saída"
+		},
+		"vs/workbench/contrib/problems/browser/problemsActions": {
+			"problems": "Problemas",
+			"showProblems": "Mostrar Problemas",
+			"clearProblems": "Limpar Problemas",
+			"copyMessage": "Copiar Mensagem",
+			"copyPath": "Copiar Caminho"
+		},
+		"vs/editor/common/config/commonEditorConfig": {
+			"editorConfigurationTitle": "Editor",
+			"fontFamily": "Controla a família da fonte.",
+			"fontWeight": "Controla o peso da fonte.",
+			"fontSize": "Controla o tamanho da fonte em pixels.",
+			"lineHeight": "Controla a altura da linha.",
+			"letterSpacing": "Controla o espaçamento entre letras em pixels.",
+			"lineNumbers": "Controla a exibição dos números de linha.",
+			"lineNumbers.off": "Os números de linha não são renderizados.",
+			"lineNumbers.on": "Os números de linha são renderizados como números absolutos.",
+			"lineNumbers.relative": "Os números de linha são renderizados como distância em linhas até a posição do cursor.",
+			"rulers": "Renderiza réguas verticais após um certo número de caracteres.",
+			"wordSeparators": "Caracteres que serão usados como separadores de palavras.",
+			"tabSize": "O número de espaços que uma tabulação equivale.",
+			"insertSpaces": "Inserir espaços ao pressionar Tab.",
+			"detectIndentation": "Controla se a indentação é detectada automaticamente.",
+			"trimAutoWhitespace": "Remover espaços em branco à direita.",
+			"wordWrap": "Controla a quebra de linha.",
+			"wordWrapColumn": "Controla a coluna de quebra de linha.",
+			"wrappingIndent": "Controla a indentação das linhas quebradas.",
+			"mouseWheelZoom": "Zoom com Ctrl+Roda do Mouse.",
+			"cursorStyle": "Controla o estilo do cursor.",
+			"cursorBlinking": "Controla a animação do cursor.",
+			"cursorWidth": "Controla a largura do cursor.",
+			"renderWhitespace": "Controla como os espaços em branco são renderizados.",
+			"renderControlCharacters": "Controla se os caracteres de controle são renderizados.",
+			"renderLineHighlight": "Controla como a linha atual é destacada.",
+			"scrollBeyondLastLine": "Controla se o editor rola além da última linha.",
+			"minimap.enabled": "Controla se o minimapa é exibido.",
+			"minimap.side": "Controla o lado em que o minimapa é renderizado.",
+			"minimap.showSlider": "Controla quando o controle deslizante do minimapa é exibido."
+		},
+		"vs/editor/contrib/find/browser/findController": {
+			"find": "Localizar",
+			"replace": "Substituir",
+			"findNext": "Localizar Próximo",
+			"findPrevious": "Localizar Anterior",
+			"replaceOne": "Substituir",
+			"replaceAll": "Substituir Tudo",
+			"toggleSearchRegex": "Usar Expressão Regular",
+			"toggleSearchWholeWord": "Coincidir Palavra Inteira",
+			"toggleSearchCaseSensitive": "Diferenciar Maiúsculas de Minúsculas",
+			"closeFind": "Fechar",
+			"noResults": "Nenhum resultado",
+			"oneResult": "1 de 1",
+			"nResults": "{0} de {1}"
+		},
+		"vs/editor/contrib/gotoSymbol/browser/goToCommands": {
+			"goToDefinition": "Ir para Definição",
+			"goToDeclaration": "Ir para Declaração",
+			"goToTypeDefinition": "Ir para Definição de Tipo",
+			"goToImplementation": "Ir para Implementação",
+			"goToReferences": "Ir para Referências",
+			"peekDefinition": "Espiar Definição",
+			"peekDeclaration": "Espiar Declaração",
+			"peekTypeDefinition": "Espiar Definição de Tipo",
+			"peekImplementation": "Espiar Implementação",
+			"peekReferences": "Espiar Referências"
+		},
+		"vs/editor/contrib/rename/browser/rename": {
+			"rename": "Renomear Símbolo",
+			"renameLabel": "Renomear",
+			"renamePreview": "Visualizar Alterações"
+		},
+		"vs/editor/contrib/format/browser/formatActions": {
+			"formatDocument": "Formatar Documento",
+			"formatSelection": "Formatar Seleção"
+		},
+		"vs/editor/contrib/comment/browser/comment": {
+			"toggleLineComment": "Alternar Comentário de Linha",
+			"toggleBlockComment": "Alternar Comentário de Bloco",
+			"addLineComment": "Adicionar Comentário de Linha",
+			"removeLineComment": "Remover Comentário de Linha"
+		},
+		"vs/editor/contrib/folding/browser/folding": {
+			"fold": "Dobrar",
+			"unfold": "Desdobrar",
+			"foldAll": "Dobrar Tudo",
+			"unfoldAll": "Desdobrar Tudo",
+			"foldLevel": "Dobrar Nível {0}",
+			"foldRecursively": "Dobrar Recursivamente",
+			"unfoldRecursively": "Desdobrar Recursivamente",
+			"foldAllBlockComments": "Dobrar Todos os Comentários de Bloco",
+			"foldAllRegions": "Dobrar Todas as Regiões",
+			"unfoldAllRegions": "Desdobrar Todas as Regiões"
+		},
+		"vs/editor/contrib/suggest/browser/suggestController": {
+			"suggest": "Sugestões",
+			"triggerSuggest": "Acionar Sugestões",
+			"acceptSuggestion": "Aceitar Sugestão",
+			"hideSuggest": "Ocultar Sugestões",
+			"showNextSuggestion": "Próxima Sugestão",
+			"showPrevSuggestion": "Sugestão Anterior"
+		},
+		"vs/editor/contrib/hover/browser/hover": {
+			"showHover": "Mostrar Hover",
+			"showDefinitionPreviewHover": "Mostrar Hover de Visualização de Definição"
+		},
+		"vs/editor/contrib/inlineCompletions/browser/inlineCompletionsController": {
+			"inlineSuggestion": "Sugestão Inline",
+			"showNextInlineSuggestion": "Próxima Sugestão Inline",
+			"showPrevInlineSuggestion": "Sugestão Inline Anterior",
+			"acceptInlineSuggestion": "Aceitar Sugestão Inline",
+			"hideInlineSuggestion": "Ocultar Sugestão Inline"
+		},
+		"vs/editor/contrib/codeAction/browser/codeActionCommands": {
+			"quickFix": "Correção Rápida",
+			"refactor": "Refatorar",
+			"sourceAction": "Ação de Código-Fonte",
+			"organizeImports": "Organizar Importações",
+			"fixAll": "Corrigir Tudo"
+		},
+		"vs/workbench/browser/actions/workspaceActions": {
+			"openWorkspace": "Abrir Área de Trabalho...",
+			"openWorkspaceFromFile": "Abrir Área de Trabalho do Arquivo...",
+			"saveWorkspaceAs": "Salvar Área de Trabalho Como...",
+			"addFolderToWorkspace": "Adicionar Pasta à Área de Trabalho...",
+			"removeFolderFromWorkspace": "Remover Pasta da Área de Trabalho",
+			"closeWorkspace": "Fechar Área de Trabalho",
+			"duplicateWorkspaceInNewWindow": "Duplicar Área de Trabalho em Nova Janela"
+		},
+		"vs/workbench/browser/actions/windowActions": {
+			"newWindow": "Nova Janela",
+			"closeWindow": "Fechar Janela",
+			"toggleFullScreen": "Alternar Tela Cheia",
+			"zoomIn": "Aumentar Zoom",
+			"zoomOut": "Diminuir Zoom",
+			"zoomReset": "Redefinir Zoom",
+			"reloadWindow": "Recarregar Janela",
+			"toggleDevTools": "Alternar Ferramentas de Desenvolvedor"
+		},
+		"vs/workbench/browser/actions/layoutActions": {
+			"toggleSidebar": "Alternar Visibilidade da Barra Lateral",
+			"togglePanel": "Alternar Visibilidade do Painel",
+			"toggleActivityBar": "Alternar Visibilidade da Barra de Atividades",
+			"toggleStatusBar": "Alternar Visibilidade da Barra de Status",
+			"toggleMenuBar": "Alternar Visibilidade da Barra de Menu",
+			"toggleCenteredLayout": "Alternar Layout Centralizado",
+			"moveSidebarLeft": "Mover Barra Lateral para a Esquerda",
+			"moveSidebarRight": "Mover Barra Lateral para a Direita",
+			"movePanelBottom": "Mover Painel para Baixo",
+			"movePanelRight": "Mover Painel para a Direita"
+		},
+		"vs/workbench/browser/actions/navigationActions": {
+			"focusNextPart": "Focar na Próxima Parte",
+			"focusPreviousPart": "Focar na Parte Anterior",
+			"focusEditor": "Focar no Editor",
+			"focusSidebar": "Focar na Barra Lateral",
+			"focusPanel": "Focar no Painel",
+			"focusTerminal": "Focar no Terminal",
+			"focusProblems": "Focar nos Problemas",
+			"focusOutput": "Focar na Saída",
+			"focusDebugConsole": "Focar no Console de Depuração"
+		},
+		"vs/workbench/contrib/quickaccess/browser/quickAccess": {
+			"quickOpen": "Abertura Rápida",
+			"goToFile": "Ir para Arquivo...",
+			"goToSymbol": "Ir para Símbolo...",
+			"goToLine": "Ir para Linha...",
+			"showAllCommands": "Mostrar Todos os Comandos",
+			"showAllSymbols": "Ir para Símbolo na Área de Trabalho...",
+			"recentFiles": "Arquivos Recentes",
+			"recentFolders": "Pastas Recentes"
+		},
+		"vs/workbench/contrib/tasks/browser/taskActions": {
+			"tasks": "Tarefas",
+			"runTask": "Executar Tarefa...",
+			"buildTask": "Executar Tarefa de Build",
+			"testTask": "Executar Tarefa de Teste",
+			"configureTask": "Configurar Tarefa...",
+			"terminateTask": "Encerrar Tarefa",
+			"restartTask": "Reiniciar Tarefa",
+			"showRunningTasks": "Mostrar Tarefas em Execução"
+		},
+		"vs/workbench/contrib/notebook/browser/notebookActions": {
+			"notebook": "Notebook",
+			"runCell": "Executar Célula",
+			"runAllCells": "Executar Todas as Células",
+			"runCellsAbove": "Executar Células Acima",
+			"runCellsBelow": "Executar Células Abaixo",
+			"stopCellExecution": "Parar Execução da Célula",
+			"insertCellAbove": "Inserir Célula Acima",
+			"insertCellBelow": "Inserir Célula Abaixo",
+			"deleteCell": "Excluir Célula",
+			"moveCellUp": "Mover Célula para Cima",
+			"moveCellDown": "Mover Célula para Baixo",
+			"clearCellOutputs": "Limpar Saídas da Célula",
+			"clearAllOutputs": "Limpar Todas as Saídas"
+		},
+		"vs/workbench/contrib/comments/browser/commentsActions": {
+			"comments": "Comentários",
+			"addComment": "Adicionar Comentário",
+			"replyToComment": "Responder ao Comentário",
+			"editComment": "Editar Comentário",
+			"deleteComment": "Excluir Comentário",
+			"resolveComment": "Resolver Comentário",
+			"unresolveComment": "Reabrir Comentário"
+		},
+		"vs/workbench/contrib/snippets/browser/snippetsActions": {
+			"snippets": "Snippets",
+			"insertSnippet": "Inserir Snippet",
+			"configureUserSnippets": "Configurar Snippets do Usuário"
+		},
+		"vs/workbench/contrib/emmet/browser/emmetActions": {
+			"emmet": "Emmet",
+			"expandAbbreviation": "Expandir Abreviação",
+			"wrapWithAbbreviation": "Envolver com Abreviação"
+		},
+		"vs/workbench/contrib/welcome/page/browser/welcomePage": {
+			"welcome": "Bem-vindo",
+			"welcomeTitle": "Bem-vindo",
+			"newFile": "Novo Arquivo",
+			"openFile": "Abrir Arquivo...",
+			"openFolder": "Abrir Pasta...",
+			"cloneGitRepository": "Clonar Repositório Git...",
+			"recentFolders": "Recentes",
+			"showWelcomePage": "Mostrar Página de Boas-vindas",
+			"learnMore": "Saiba Mais",
+			"documentation": "Documentação",
+			"introVideos": "Vídeos Introdutórios",
+			"tipsTricks": "Dicas e Truques",
+			"keyboardShortcuts": "Atalhos de Teclado",
+			"productDocumentation": "Documentação do Produto"
+		},
+		"vs/workbench/contrib/update/browser/update": {
+			"update": "Atualização",
+			"checkForUpdates": "Verificar Atualizações",
+			"downloadUpdate": "Baixar Atualização",
+			"installUpdate": "Instalar Atualização",
+			"restartToUpdate": "Reiniciar para Atualizar",
+			"updateAvailable": "Atualização Disponível",
+			"noUpdatesAvailable": "Nenhuma Atualização Disponível",
+			"downloading": "Baixando...",
+			"installing": "Instalando..."
+		},
+		"vs/workbench/contrib/feedback/browser/feedback": {
+			"feedback": "Feedback",
+			"reportIssue": "Relatar Problema",
+			"submitFeedback": "Enviar Feedback",
+			"tweetFeedback": "Tweetar Feedback"
+		},
+		"vs/workbench/contrib/codeEditor/browser/diffEditorHelper": {
+			"diffEditor": "Editor de Diferenças",
+			"showDifferences": "Mostrar Diferenças",
+			"nextDifference": "Próxima Diferença",
+			"previousDifference": "Diferença Anterior",
+			"toggleInlineView": "Alternar Visualização Inline",
+			"toggleSideBySideView": "Alternar Visualização Lado a Lado"
+		},
+		"vs/workbench/contrib/markers/browser/markersView": {
+			"markers": "Marcadores",
+			"errors": "Erros",
+			"warnings": "Avisos",
+			"infos": "Informações",
+			"filterProblems": "Filtrar Problemas",
+			"showErrors": "Mostrar Erros",
+			"showWarnings": "Mostrar Avisos",
+			"showInfos": "Mostrar Informações"
+		},
+		"vs/workbench/contrib/remote/browser/remoteIndicator": {
+			"remote": "Remoto",
+			"remoteHost": "Host Remoto",
+			"openRemoteWindow": "Abrir Janela Remota",
+			"closeRemoteConnection": "Fechar Conexão Remota",
+			"connectedTo": "Conectado a {0}"
+		},
+		"vs/workbench/contrib/workspace/browser/workspaceTrustEditor": {
+			"workspaceTrust": "Confiança da Área de Trabalho",
+			"trustWorkspace": "Confiar na Área de Trabalho",
+			"dontTrustWorkspace": "Não Confiar",
+			"trustedWorkspace": "Área de Trabalho Confiável",
+			"untrustedWorkspace": "Área de Trabalho Não Confiável",
+			"manageWorkspaceTrust": "Gerenciar Confiança da Área de Trabalho"
+		},
+		"vs/workbench/services/editor/browser/editorService": {
+			"untitled": "Sem Título",
+			"untitledWithNumber": "Sem Título-{0}",
+			"modified": "modificado",
+			"readonly": "somente leitura"
+		},
+		"vs/workbench/services/textfile/common/textFileService": {
+			"saveAs": "Salvar Como",
+			"save": "Salvar",
+			"revert": "Reverter",
+			"saveAll": "Salvar Tudo",
+			"revertAll": "Reverter Tudo"
+		},
+		"vs/workbench/services/backup/common/backupFileService": {
+			"backup": "Backup",
+			"restoreBackup": "Restaurar Backup"
+		},
+		"vs/workbench/services/history/browser/historyService": {
+			"history": "Histórico",
+			"goBack": "Voltar",
+			"goForward": "Avançar",
+			"goLast": "Ir para o Último",
+			"clearHistory": "Limpar Histórico"
+		},
+		"vs/workbench/services/keybinding/browser/keybindingService": {
+			"keybinding": "Atalho de Teclado",
+			"keybindings": "Atalhos de Teclado",
+			"recordKeys": "Gravar Teclas",
+			"defineKeybinding": "Definir Atalho de Teclado"
+		},
+		"vs/workbench/services/themes/browser/workbenchThemeService": {
+			"colorTheme": "Tema de Cores",
+			"fileIconTheme": "Tema de Ícones de Arquivo",
+			"productIconTheme": "Tema de Ícones do Produto",
+			"selectColorTheme": "Selecionar Tema de Cores",
+			"selectFileIconTheme": "Selecionar Tema de Ícones de Arquivo",
+			"selectProductIconTheme": "Selecionar Tema de Ícones do Produto"
+		},
+		"vs/platform/quickinput/browser/quickInput": {
+			"quickInput": "Entrada Rápida",
+			"quickPick": "Seleção Rápida",
+			"ok": "OK",
+			"cancel": "Cancelar",
+			"back": "Voltar",
+			"type": "Digite para pesquisar...",
+			"noResults": "Nenhum resultado encontrado"
+		},
+		"vs/platform/notification/common/notification": {
+			"notification": "Notificação",
+			"notifications": "Notificações",
+			"info": "Informação",
+			"warning": "Aviso",
+			"error": "Erro",
+			"dismiss": "Dispensar",
+			"dismissAll": "Dispensar Tudo",
+			"showNotifications": "Mostrar Notificações",
+			"clearNotifications": "Limpar Notificações"
+		},
+		"vs/platform/progress/common/progress": {
+			"progress": "Progresso",
+			"loading": "Carregando...",
+			"processing": "Processando...",
+			"canceling": "Cancelando...",
+			"cancel": "Cancelar"
+		},
+		"vs/platform/clipboard/browser/clipboardService": {
+			"clipboard": "Área de Transferência",
+			"copy": "Copiar",
+			"cut": "Recortar",
+			"paste": "Colar",
+			"copyPath": "Copiar Caminho",
+			"copyRelativePath": "Copiar Caminho Relativo"
+		},
+		"vs/platform/contextview/browser/contextMenuService": {
+			"contextMenu": "Menu de Contexto"
+		},
+		"vs/platform/commands/common/commands": {
+			"command": "Comando",
+			"commands": "Comandos",
+			"runCommand": "Executar Comando",
+			"commandPalette": "Paleta de Comandos"
+		},
+		"vs/platform/configuration/common/configuration": {
+			"configuration": "Configuração",
+			"settings": "Configurações",
+			"userSettings": "Configurações do Usuário",
+			"workspaceSettings": "Configurações da Área de Trabalho",
+			"folderSettings": "Configurações da Pasta"
+		},
+		"vs/platform/workspace/common/workspace": {
+			"workspace": "Área de Trabalho",
+			"folder": "Pasta",
+			"file": "Arquivo",
+			"untitledWorkspace": "Área de Trabalho Sem Título"
+		},
+		"vs/platform/files/common/files": {
+			"file": "Arquivo",
+			"folder": "Pasta",
+			"symbolicLink": "Link Simbólico",
+			"unknown": "Desconhecido",
+			"fileNotFound": "Arquivo não encontrado",
+			"folderNotFound": "Pasta não encontrada",
+			"permissionDenied": "Permissão negada",
+			"fileExists": "Arquivo já existe",
+			"folderExists": "Pasta já existe"
+		},
+		"vs/base/common/errorMessage": {
+			"error": "Erro",
+			"unknown": "Ocorreu um erro desconhecido.",
+			"connectionError": "Erro de conexão",
+			"timeout": "Tempo limite excedido",
+			"cancelled": "Operação cancelada"
+		},
+		"vs/base/common/labels": {
+			"file": "arquivo",
+			"folder": "pasta",
+			"workspace": "área de trabalho"
+		},
+		"vs/base/browser/ui/button/button": {
+			"button": "Botão"
+		},
+		"vs/base/browser/ui/checkbox/checkbox": {
+			"checkbox": "Caixa de Seleção"
+		},
+		"vs/base/browser/ui/dropdown/dropdown": {
+			"dropdown": "Menu Suspenso"
+		},
+		"vs/base/browser/ui/list/listWidget": {
+			"list": "Lista",
+			"selectAll": "Selecionar Tudo",
+			"deselectAll": "Desmarcar Tudo"
+		},
+		"vs/base/browser/ui/tree/abstractTree": {
+			"tree": "Árvore",
+			"expand": "Expandir",
+			"collapse": "Recolher",
+			"expandAll": "Expandir Tudo",
+			"collapseAll": "Recolher Tudo"
+		}
+	}
+}

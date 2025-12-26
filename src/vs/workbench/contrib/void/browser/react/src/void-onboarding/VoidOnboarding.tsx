@@ -261,8 +261,9 @@ const AddProvidersPage = ({ pageIndex, setPageIndex }: { pageIndex: number, setP
 								setPageIndex(pageIndex + 1);
 								setErrorMessage(null);
 							} else {
-								// Show error message
-								setErrorMessage("Please set up at least one Chat model before moving on.");
+								// Allow to proceed anyway, just show warning
+								setPageIndex(pageIndex + 1);
+								setErrorMessage(null);
 							}
 						}}
 					/>
@@ -547,7 +548,7 @@ const VoidOnboardingContent = () => {
 					voidMetricsService.capture('Completed Onboarding', { selectedProviderName, wantToUseOption })
 				}}
 				ringSize={voidSettingsState.globalSettings.isOnboardingComplete ? 'screen' : undefined}
-			>Enter the Void</PrimaryActionButton>
+			>Entrar no RK IDE</PrimaryActionButton>
 		</div>
 	</div>
 
@@ -596,7 +597,8 @@ const VoidOnboardingContent = () => {
 		0: <OnboardingPageShell
 			content={
 				<div className='flex flex-col items-center gap-8'>
-					<div className="text-5xl font-light text-center">Welcome to Void</div>
+					<div className="text-5xl font-light text-center">Welcome to RK IDE</div>
+					<div className="text-sm text-center text-void-fg-3 mt-2">Direitos reservados de Kaynan e Renier</div>
 
 					{/* Slice of Void image */}
 					<div className='max-w-md w-full h-[30vh] mx-auto flex items-center justify-center'>
@@ -607,11 +609,22 @@ const VoidOnboardingContent = () => {
 					<FadeIn
 						delayMs={1000}
 					>
-						<PrimaryActionButton
-							onClick={() => { setPageIndex(1) }}
-						>
-							Get Started
-						</PrimaryActionButton>
+						<div className="flex flex-col items-center gap-4">
+							<PrimaryActionButton
+								onClick={() => { setPageIndex(1) }}
+							>
+								Get Started
+							</PrimaryActionButton>
+							<button
+								onClick={() => {
+									voidSettingsService.setGlobalSetting('isOnboardingComplete', true);
+									voidMetricsService.capture('Skipped Onboarding', {})
+								}}
+								className="text-sm text-void-fg-3 hover:text-void-fg-1 transition-colors"
+							>
+								Skip setup (configure later in Settings)
+							</button>
+						</div>
 					</FadeIn>
 
 				</div>

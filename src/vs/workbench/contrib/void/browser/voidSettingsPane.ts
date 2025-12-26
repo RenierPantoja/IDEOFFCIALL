@@ -26,6 +26,8 @@ import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextke
 import { mountVoidSettings } from './react/out/void-settings-tsx/index.js'
 import { Codicon } from '../../../../base/common/codicons.js';
 import { toDisposable } from '../../../../base/common/lifecycle.js';
+import { IViewsService } from '../../../services/views/common/viewsService.js';
+import { VOID_VIEW_CONTAINER_ID } from './sidebarPane.js';
 
 
 // refer to preferences.contribution.ts keybindings editor
@@ -49,7 +51,7 @@ class VoidSettingsInput extends EditorInput {
 	}
 
 	override getName(): string {
-		return nls.localize('voidSettingsInputsName', 'Void\'s Settings');
+		return nls.localize('voidSettingsInputsName', 'RK IDE Settings');
 	}
 
 	override getIcon() {
@@ -112,7 +114,7 @@ class VoidSettingsPane extends EditorPane {
 
 // register Settings pane
 Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(
-	EditorPaneDescriptor.create(VoidSettingsPane, VoidSettingsPane.ID, nls.localize('VoidSettingsPane', "Void\'s Settings Pane")),
+	EditorPaneDescriptor.create(VoidSettingsPane, VoidSettingsPane.ID, nls.localize('VoidSettingsPane', "RK IDE Settings Pane")),
 	[new SyncDescriptor(VoidSettingsInput)]
 );
 
@@ -123,17 +125,19 @@ registerAction2(class extends Action2 {
 	constructor() {
 		super({
 			id: VOID_TOGGLE_SETTINGS_ACTION_ID,
-			title: nls.localize2('voidSettings', "Void: Toggle Settings"),
+			title: nls.localize2('voidSettings', "RK IDE: Toggle Settings"),
 			icon: Codicon.settingsGear,
 			menu: [
 				{
 					id: MenuId.LayoutControlMenuSubmenu,
 					group: 'z_end',
+					order: 2
 				},
 				{
 					id: MenuId.LayoutControlMenu,
 					when: ContextKeyExpr.equals('config.workbench.layoutControl.type', 'both'),
-					group: 'z_end'
+					group: 'z_end',
+					order: 2
 				}
 			]
 		});
@@ -165,6 +169,40 @@ registerAction2(class extends Action2 {
 	}
 })
 
+// register the chat icon on the top right (next to settings)
+export const VOID_TOGGLE_CHAT_ACTION_ID = 'workbench.action.toggleVoidChat'
+registerAction2(class extends Action2 {
+	constructor() {
+		super({
+			id: VOID_TOGGLE_CHAT_ACTION_ID,
+			title: nls.localize2('voidChat', "RK IDE: Toggle Chat"),
+			icon: Codicon.comment,
+			menu: [
+				{
+					id: MenuId.LayoutControlMenuSubmenu,
+					group: 'z_end',
+					order: 1
+				},
+				{
+					id: MenuId.LayoutControlMenu,
+					when: ContextKeyExpr.equals('config.workbench.layoutControl.type', 'both'),
+					group: 'z_end',
+					order: 1
+				}
+			]
+		});
+	}
+
+	async run(accessor: ServicesAccessor): Promise<void> {
+		const viewsService = accessor.get(IViewsService);
+		// Toggle the chat sidebar
+		if (viewsService.isViewVisible(VOID_VIEW_CONTAINER_ID)) {
+			viewsService.closeView(VOID_VIEW_CONTAINER_ID);
+		} else {
+			viewsService.openView(VOID_VIEW_CONTAINER_ID, true);
+		}
+	}
+})
 
 
 export const VOID_OPEN_SETTINGS_ACTION_ID = 'workbench.action.openVoidSettings'
@@ -172,7 +210,7 @@ registerAction2(class extends Action2 {
 	constructor() {
 		super({
 			id: VOID_OPEN_SETTINGS_ACTION_ID,
-			title: nls.localize2('voidSettingsAction2', "Void: Open Settings"),
+			title: nls.localize2('voidSettingsAction2', "RK IDE: Open Settings"),
 			f1: true,
 			icon: Codicon.settingsGear,
 		});
@@ -202,7 +240,7 @@ MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 	group: '0_command',
 	command: {
 		id: VOID_TOGGLE_SETTINGS_ACTION_ID,
-		title: nls.localize('voidSettingsActionGear', "Void\'s Settings")
+		title: nls.localize('voidSettingsActionGear', "RK IDE Settings")
 	},
 	order: 1
 });
